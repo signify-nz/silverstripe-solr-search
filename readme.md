@@ -11,7 +11,6 @@
 
 [LICENSE.md](LGPL v3)
 
-# Master is no longer the main branch. If you are using dev-master, switch to dev-main
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B11GKLY) 
 

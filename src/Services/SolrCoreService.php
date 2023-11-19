@@ -92,10 +92,10 @@ class SolrCoreService
      * @var array Available config versions
      */
     protected static $solr_versions = [
-        "9.0.0",
-        "7.0.0",
-        "5.0.0",
-        "4.0.0",
+        "9.99999999.0",
+        "7.99999999.0",
+        "5.99999999.0",
+        "4.99999999.0",
     ];
 
     /**
