@@ -33,7 +33,7 @@
     "minimalcode/search": "^1.0",
     "guzzlehttp/guzzle": "^6.3|^7",
     "http-interop/http-factory-guzzle": "^1",
-    "symfony/event-dispatcher": "^5.4",
+    "symfony/event-dispatcher": "^5.4|^6",
     "php-http/guzzle7-adapter": "^1.0.0"
   },
   "require-dev": {
