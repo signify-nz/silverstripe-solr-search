@@ -242,8 +242,8 @@ class DataObjectExtension extends DataExtension
         $owner = $this->owner;
         /** @var DirtyClass $record */
         $record = $this->getDirtyClass(SolrCoreService::DELETE_TYPE);
-
-        $ids = json_decode($record->IDs, 1) ?: [];
+        $record->IDs = $record->IDs ?? '[]'; // If the record is new, or the IDs list is null, default
+        $ids = json_decode($record->IDs, 1);
 
         try {
             (new SolrCoreService())
