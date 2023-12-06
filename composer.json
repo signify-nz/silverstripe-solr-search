@@ -14,7 +14,7 @@
     {
       "name": "Simon `Firesphere` Erkelens",
       "email": "github@casa-laguna.net",
-      "homepage": "https://casa-laguna.net",
+      "homepage": "https://firesphere.dev",
       "role": "Lead developer"
     },
     {
@@ -61,9 +61,9 @@
     }
   },
   "support": {
-    "email": "solr@casa-laguna.net",
-    "issues": "https://github.com/firesphere/silverstripe-solr-search/issues",
-    "source": "https://github.com/firesphere/silverstripe-solr-search",
+    "email": "simon@firesphere.dev",
+    "issues": "https://codeberg.org/firesphere/silverstripe-solr/issues",
+    "source": "https://codeberg.org/firesphere/silverstripe-solr",
     "docs": "https://firesphere.github.io/solr-docs",
     "chat": "https://silverstripe-users.slack.com/archives/C9KB3U0P8"
   },
