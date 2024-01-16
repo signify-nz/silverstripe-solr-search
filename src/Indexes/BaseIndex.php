@@ -225,7 +225,7 @@ abstract class BaseIndex
 
         // Handle the after search first. This gets a raw search result
         $this->extend('onAfterSearch', $result);
-        $searchResult = new SearchResult($result, $query, $this);
+        $searchResult = SearchResult::create($result, $query, $this);
         if ($this->doRetry($query, $result, $searchResult)) {
             // We need to override the spellchecking with the previous spellcheck
             // @todo refactor this to a cleaner way
