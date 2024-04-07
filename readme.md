@@ -9,10 +9,14 @@
 
 # License
 
-[LICENSE.md](LGPL v3)
+[LGPL V3](LICENSE.md)
 
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B11GKLY) 
+
+## Disclaimer
+
+If this module breaks your website, you get to keep all the pieces.
 
 # Modern SilverStripe Solr Search
 
