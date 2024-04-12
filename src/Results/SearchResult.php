@@ -277,7 +277,12 @@ class SearchResult extends ViewableData
         if (!$match instanceof DataObject) {
             $class = $match->ClassName;
             /** @var DataObject $match */
-            $match = $class::get()->byID($match->{$classIDField});
+
+            //check against obsolete records
+            if(class_exists($class)) {
+                $match = $class::get()->byID($match->{$classIDField});
+            }
+
         }
 
         return ($match && $match->exists()) ? $match : false;
