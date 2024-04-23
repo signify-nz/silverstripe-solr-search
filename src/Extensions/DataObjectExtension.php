@@ -184,7 +184,7 @@ class DataObjectExtension extends DataExtension
         $record->IDs = json_encode($ids);
         $record->write();
         $logger = Injector::inst()->get(LoggerInterface::class);
-        $logger->warn(
+        $logger->warning(
             sprintf(
                 'Unable to alter %s with ID %s',
                 $owner->ClassName,

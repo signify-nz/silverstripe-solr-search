@@ -43,7 +43,7 @@ class ClearErrorsTask extends BuildTask
      */
     public function run($request)
     {
-        Injector::inst()->get(LoggerInterface::class)->warn(_t(
+        Injector::inst()->get(LoggerInterface::class)->warning(_t(
             __class__ . ".CLEARLOG",
             "Emptying logs for table SolrLog." . PHP_EOL . "WARNING: Any logs that are not inspected will be gone soon."
         ));
