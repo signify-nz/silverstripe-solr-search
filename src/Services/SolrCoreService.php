@@ -98,6 +98,10 @@ class SolrCoreService
         "4.99999999.0",
     ];
 
+    private static $add_docs_overwrite;
+
+    private static $add_docs_commitWithin;
+
     /**
      * SolrCoreService constructor.
      *
@@ -282,7 +286,11 @@ class SolrCoreService
         $factory = $this->getFactory($items);
         $docs = $factory->buildItems($fields, $index, $update);
         if (count($docs)) {
-            $update->addDocuments($docs);
+            $update->addDocuments(
+                $docs,
+                $this->config()->get('add_docs_overwrite'),
+                $this->config()->get('add_docs_commitWithin')
+            );
         }
     }
 
