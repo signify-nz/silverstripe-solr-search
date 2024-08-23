@@ -104,6 +104,9 @@ trait CoreServiceTrait
         $classes = [];
         foreach ($indexes as $index) {
             $classes = $this->getClassesInHierarchy($index, $classes);
+            if (!empty($exclude = singleton($index)->config()->get('exclude_classes'))) {
+                $classes = array_diff($classes, $exclude);
+            }
         }
 
         $cache->set('ValidClasses', array_unique($classes));
