@@ -179,7 +179,7 @@ class DocumentFactory
         $type = $typeMap[$options['type']] ?? $typeMap['*'];
 
         foreach ($valuesForField as $value) {
-            $this->extend('onBeforeAddDoc', $options, $value);
+            $this->extend('onBeforeAddDoc', $options, $value, $object);
             $this->addToDoc($doc, $options, $type, $value);
         }
     }
