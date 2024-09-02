@@ -188,7 +188,7 @@ class SchemaFactory extends ViewableData
                 $this->getFieldDefinition($copyField, $return, $field);
             }
         }
-
+        $this->extend('onBeforeCopyFieldDefinitions', $return);
         return $return;
     }
 
