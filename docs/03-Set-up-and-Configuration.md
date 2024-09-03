@@ -77,6 +77,16 @@ SilverStripe\Core\Injector\Injector:
     class: Firesphere\SolrSearch\Stores\PostConfigStore
 ```
 
+#### Additional Solarium options
+If your Solr configuration requires use of the [additional Solarium addDocuments options](https://solarium.readthedocs.io/en/stable/queries/update-query/building-an-update-query/add-command/) for the `SolrIndexTask` to complete properly, these can also be set as config on the SolrCoreService.
+
+Example config:
+```yaml
+Firesphere\SolrSearch\Services\SolrCoreService:
+  add_docs_overwrite: true #boolean
+  add_docs_commitWithin: 1000 #int - value in milliseconds
+```
+
 ### Authentication
 
 Solr supports several ways of adding authentication to the instance.
