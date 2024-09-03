@@ -98,8 +98,14 @@ class SolrCoreService
         "4.99999999.0",
     ];
 
+    /**
+     * @var array|null Option for use in Solarium\QueryType\Update\Query\Query::addDocuments() function
+     */
     private static $add_docs_overwrite;
 
+    /**
+     * @var array|null Option for use in Solarium\QueryType\Update\Query\Query::addDocuments() function
+     */
     private static $add_docs_commitWithin;
 
     /**
