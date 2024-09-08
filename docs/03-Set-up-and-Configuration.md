@@ -296,6 +296,19 @@ Firesphere\SolrSearch\Services\SolrCoreService:
 
 Looking at the `tests` folder, there is a `TestIndexFour`. This index is not loaded unless explicitly asked.
 
+## Excluding unwanted classes from index
+
+To exclude unwanted subclasses from being indexed add these in a list as an `exclude_classes` config on the index. 
+
+For example, if you want to index `SilverStripe\Assets\File` but not it's subclasses `Folder` and `Image`, and you want to index `SilverStripe\CMS\Model\SiteTree` but not `RedirectorPage` the config would look like this:
+
+```yaml
+Firesphere\SolrSearch\Indexes\BaseIndex:
+  exclude_classes:
+    - SilverStripe\CMS\Model\RedirectorPage
+    - SilverStripe\Assets\Folder
+    - SilverStripe\Assets\Image
+```
 
 ----------
 <sup>1</sup> Although not required, it's highly recommended
