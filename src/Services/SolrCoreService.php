@@ -99,6 +99,16 @@ class SolrCoreService
     ];
 
     /**
+     * @var array|null Option for use in Solarium\QueryType\Update\Query\Query::addDocuments() function
+     */
+    private static $add_docs_overwrite;
+
+    /**
+     * @var array|null Option for use in Solarium\QueryType\Update\Query\Query::addDocuments() function
+     */
+    private static $add_docs_commitWithin;
+
+    /**
      * SolrCoreService constructor.
      *
      * @throws ReflectionException
@@ -282,7 +292,11 @@ class SolrCoreService
         $factory = $this->getFactory($items);
         $docs = $factory->buildItems($fields, $index, $update);
         if (count($docs)) {
-            $update->addDocuments($docs);
+            $update->addDocuments(
+                $docs,
+                $this->config()->get('add_docs_overwrite'),
+                $this->config()->get('add_docs_commitWithin')
+            );
         }
     }
 
