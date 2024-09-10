@@ -102,7 +102,7 @@ class DataObjectExtension extends DataExtension
         /** @var DataObject $owner */
         $record = $this->getDirtyClass(SolrCoreService::UPDATE_TYPE);
 
-        $ids = json_decode($record->IDs ?? [], 1) ?: [];
+        $ids = json_decode($record->IDs ?? '[]', 1) ?: [];
         $mode = Versioned::get_reading_mode();
         try {
             Versioned::set_reading_mode(Versioned::LIVE);
