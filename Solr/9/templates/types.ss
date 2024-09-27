@@ -119,28 +119,8 @@
     NOTE: autoGeneratePhraseQueries="true" tends to not work well for non whitespace delimited languages.
     -->
 <fieldType name="text" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
-    <analyzer type="index">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-        <!-- in this example, we will only use synonyms at query time
-        <filter class="solr.SynonymGraphFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
-        -->
-        <!-- Case insensitive stop word removal.
-          add enablePositionIncrements=true in both the index and query
-          analyzers to leave a 'gap' for more accurate phrase queries.
-        -->
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.StopFilterFactory"
-                ignoreCase="true"
-                words="stopwords.txt"
-
-        />
-        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1"
-                catenateWords="1"
-                catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
-        <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
-    </analyzer>
     <analyzer type="query">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
         <filter class="solr.KeywordRepeatFilterFactory"/>
@@ -158,16 +138,23 @@
         <filter class="solr.SnowballPorterFilterFactory"/>
     </analyzer>
     <analyzer type="index">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.StopFilterFactory"
+                ignoreCase="true"
+                words="stopwords.txt"
+        />
         <filter class="solr.SnowballPorterFilterFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1"
+                catenateWords="1"
+                catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
         <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
     </analyzer>
 </fieldType>
 <fieldType name="stemfield" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
     <analyzer type="index">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
         <filter class="solr.SnowballPorterFilterFactory"/>
@@ -175,7 +162,7 @@
         <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
     </analyzer>
     <analyzer type="query">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
         <filter class="solr.SnowballPorterFilterFactory"/>
@@ -185,7 +172,7 @@
 <!-- A copy of text that has the HTMLStripCharFilterFactory as the first index analyzer, so that html can be provided -->
 <fieldType name="htmltext" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
     <analyzer type="index">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <charFilter class="solr.HTMLStripCharFilterFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
@@ -199,7 +186,7 @@
         <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
     </analyzer>
     <analyzer type="query">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
         <filter class="solr.KeywordRepeatFilterFactory"/>
@@ -266,7 +253,7 @@
 <!-- A general unstemmed text field - good if one does not know the language of the field -->
 <fieldType name="textgen" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
@@ -278,7 +265,7 @@
         <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
     </analyzer>
     <analyzer type="query">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
         <filter class="solr.StopFilterFactory"
