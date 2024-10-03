@@ -106,9 +106,10 @@ abstract class BaseIndex
     public function __construct()
     {
         // Set up the client
-        $config = Config::inst()->get(SolrCoreService::class, 'config');
+        $service = Injector::inst()->get(SolrCoreService::class);
+        $config = $service->getClient()->getOptions();
         $config['endpoint'] = $this->getConfig($config['endpoint']);
-        $this->client = (new SolrCoreService())->getClient();
+        $this->client = $service->getClient();
         $this->client->setOptions($config);
 
         // Set up the schema service, only used in the generation of the schema
