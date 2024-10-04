@@ -288,7 +288,7 @@ abstract class BaseIndex
      * Conditions are:
      * It is not already a retry with spellchecking
      * Spellchecking is enabled
-     * If spellchecking is enabled and nothing is found OR it should follow spellchecking none the less
+     * Spellcheck following is enabled and nothing is found
      * There is a spellcheck output
      *
      * @param BaseQuery $query
@@ -300,7 +300,7 @@ abstract class BaseIndex
     {
         return !$this->retry &&
             $query->hasSpellcheck() &&
-            ($query->shouldFollowSpellcheck() || $result->getNumFound() === 0) &&
+            ($query->shouldFollowSpellcheck() && $result->getNumFound() === 0) &&
             $searchResult->getCollatedSpellcheck();
     }
 
