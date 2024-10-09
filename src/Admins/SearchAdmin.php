@@ -13,6 +13,7 @@ use Firesphere\SolrSearch\Models\DirtyClass;
 use Firesphere\SolrSearch\Models\SearchSynonym;
 use Firesphere\SolrSearch\Models\SolrLog;
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Security\Security;
 use SilverStripe\View\Requirements;
 
 /**
@@ -56,5 +57,13 @@ class SearchAdmin extends ModelAdmin
         parent::init();
 
         Requirements::css('firesphere/solr-search:client/dist/main.css');
+    }
+
+    protected function getManagedModelTabs()
+    {
+        $tabs = parent::getManagedModelTabs();
+        return $tabs->filterByCallback(function ($tab) {
+            return singleton($tab->ClassName)->canView();
+        });
     }
 }
