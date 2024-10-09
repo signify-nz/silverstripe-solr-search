@@ -108,7 +108,7 @@ class SearchSynonym extends DataObject implements PermissionProvider
     }
 
     /**
-     * Only createable by members with permission or when in dev mode to clean up
+     * Only createable by members with permission
      *
      * @param null|Member $member
      * @return boolean
@@ -119,7 +119,7 @@ class SearchSynonym extends DataObject implements PermissionProvider
     }
 
     /**
-     * Only editable by members with permission or when in dev mode to clean up
+     * Only editable by members with permission
      *
      * @param null|Member $member
      * @return boolean
