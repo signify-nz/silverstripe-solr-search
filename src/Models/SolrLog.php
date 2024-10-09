@@ -13,6 +13,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 
 /**
@@ -132,22 +133,18 @@ class SolrLog extends DataObject implements PermissionProvider
      */
     public function canView($member = null)
     {
-        return parent::canView($member);
+        return Permission::checkMember($member, 'VIEW_LOG');
     }
 
     /**
-     * Only deleteable by admins or when in dev mode to clean up
+     * Only deleteable by members with permission or when in dev mode to clean up
      *
      * @param null|Member $member
      * @return bool|mixed
      */
     public function canDelete($member = null)
     {
-        if ($member) {
-            return $member->inGroup('administrators') || Director::isDev();
-        }
-
-        return parent::canDelete($member) || Director::isDev();
+        return Permission::checkMember($member, 'DELETE_LOG') || Director::isDev();
     }
 
     /**
