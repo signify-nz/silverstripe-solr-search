@@ -159,7 +159,6 @@ class SolrLog extends DataObject implements PermissionProvider
         return $classMap[$this->Level] ?? 'alert alert-info';
     }
 
-
     /**
      * Return a map of permission codes to add to the dropdown shown in the Security section of the CMS.
      * array(
