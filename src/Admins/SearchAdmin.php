@@ -57,4 +57,12 @@ class SearchAdmin extends ModelAdmin
 
         Requirements::css('firesphere/solr-search:client/dist/main.css');
     }
+
+    protected function getManagedModelTabs()
+    {
+        $tabs = parent::getManagedModelTabs();
+        return $tabs->filterByCallback(function ($tab) {
+            return singleton($tab->ClassName)->canView();
+        });
+    }
 }
