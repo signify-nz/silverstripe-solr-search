@@ -13,6 +13,8 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\PermissionProvider;
 
 /**
  * Class \Firesphere\SolrSearch\Models\DirtyClass
@@ -23,7 +25,7 @@ use SilverStripe\Security\Member;
  * @property string $Class
  * @property string $IDs
  */
-class DirtyClass extends DataObject
+class DirtyClass extends DataObject implements PermissionProvider
 {
     /**
      * @var string Table name
@@ -108,5 +110,38 @@ class DirtyClass extends DataObject
     public function canCreate($member = null, $context = [])
     {
         return false;
+    }
+
+    /**
+     * Member has view access?
+     *
+     * @param null|Member $member
+     * @return bool|mixed
+     */
+    public function canView($member = null)
+    {
+        return Permission::checkMember($member, 'VIEW_DIRTY_CLASSES');
+    }
+
+    /**
+     * Return a map of permission codes to add to the dropdown shown in the Security section of the CMS.
+     * array(
+     *   'VIEW_SITE' => 'View the site',
+     * );
+     *
+     * @return array
+     */
+    public function providePermissions()
+    {
+        return [
+            'VIEW_DIRTY_CLASSES'   => [
+                'name'     => _t(self::class . '.PERMISSION_VIEW_CLASSES_DESCRIPTION', 'View Solr dirty classes'),
+                'category' => _t('Permissions.LOGS_CATEGORIES', 'Solr logs permissions'),
+                'help'     => _t(
+                    self::class . '.PERMISSION_VIEW_CLASSES_HELP',
+                    'Permission required to view existing Solr dirty classes.'
+                ),
+            ],
+        ];
     }
 }
