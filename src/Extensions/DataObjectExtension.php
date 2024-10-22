@@ -243,6 +243,25 @@ class DataObjectExtension extends DataExtension
     }
 
     /**
+     * Clear old page type from Solr before publishing if required
+     *
+     * @throws ValidationException
+     * @throws HTTPException
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     */
+    public function onBeforePublish()
+    {
+        // Check for changed classname and delete old record before pushing new if required.
+        if ($this->owner instanceof SiteTree) {
+            $lastPublished = Versioned::get_by_stage(SiteTree::class, Versioned::LIVE)->byID($this->owner->ID);
+            if ($lastPublished && $this->owner->ClassName !== $lastPublished->ClassName) {
+                $this->removeItem($lastPublished);
+            }
+        }
+    }
+
+    /**
      * Push the item to Solr after publishing
      *
      * @throws ValidationException
@@ -252,13 +271,6 @@ class DataObjectExtension extends DataExtension
      */
     public function onAfterPublish()
     {
-        // Check for changed classname and delete old record before pushing new if required.
-        if ($this->owner instanceof SiteTree) {
-            $lastPublished = Versioned::get_by_stage(SiteTree::class, Versioned::LIVE)->byID($this->owner->ID);
-            if ($lastPublished && $this->owner->ClassName !== $lastPublished->ClassName) {
-                $this->removeItem($lastPublished);
-            }
-        }
         if ($this->shouldPush()) {
             /** @var DataObject $owner */
             $owner = $this->owner;
