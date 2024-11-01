@@ -106,9 +106,10 @@ abstract class BaseIndex
     public function __construct()
     {
         // Set up the client
-        $config = Config::inst()->get(SolrCoreService::class, 'config');
+        $service = Injector::inst()->get(SolrCoreService::class);
+        $config = $service->getClient()->getOptions();
         $config['endpoint'] = $this->getConfig($config['endpoint']);
-        $this->client = (new SolrCoreService())->getClient();
+        $this->client = $service->getClient();
         $this->client->setOptions($config);
 
         // Set up the schema service, only used in the generation of the schema
@@ -287,7 +288,7 @@ abstract class BaseIndex
      * Conditions are:
      * It is not already a retry with spellchecking
      * Spellchecking is enabled
-     * If spellchecking is enabled and nothing is found OR it should follow spellchecking none the less
+     * Spellcheck following is enabled and nothing is found
      * There is a spellcheck output
      *
      * @param BaseQuery $query
@@ -299,7 +300,7 @@ abstract class BaseIndex
     {
         return !$this->retry &&
             $query->hasSpellcheck() &&
-            ($query->shouldFollowSpellcheck() || $result->getNumFound() === 0) &&
+            ($query->shouldFollowSpellcheck() && $result->getNumFound() === 0) &&
             $searchResult->getCollatedSpellcheck();
     }
 

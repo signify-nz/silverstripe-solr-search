@@ -14,7 +14,6 @@ use Exception;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Models\DirtyClass;
 use Firesphere\SolrSearch\Services\SolrCoreService;
-use Firesphere\SolrSearch\Tests\DataObjectExtensionTest;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use ReflectionException;
@@ -94,7 +93,7 @@ class DataObjectExtension extends DataExtension
      */
     protected function pushToSolr(DataObject $owner)
     {
-        $service = new SolrCoreService();
+        $service = Injector::inst()->get(SolrCoreService::class);
         if (!$service->isValidClass($owner->ClassName)) {
             return;
         }
@@ -102,7 +101,7 @@ class DataObjectExtension extends DataExtension
         /** @var DataObject $owner */
         $record = $this->getDirtyClass(SolrCoreService::UPDATE_TYPE);
 
-        $ids = json_decode($record->IDs, 1) ?: [];
+        $ids = json_decode($record->IDs ?? '[]', 1) ?: [];
         $mode = Versioned::get_reading_mode();
         try {
             Versioned::set_reading_mode(Versioned::LIVE);
@@ -129,19 +128,21 @@ class DataObjectExtension extends DataExtension
      * Find or create a new DirtyClass for recording dirty IDs
      *
      * @param string $type
+     * @param string $class optional class to use. If not set uses current owner class
      * @return DirtyClass
      * @throws ValidationException
      */
-    protected function getDirtyClass(string $type)
+    protected function getDirtyClass(string $type, string $class = null)
     {
+        $params = [
+            'Class' => ($class ?? $this->owner->ClassName),
+            'Type' => $type
+        ];
         // Get the DirtyClass object for this item
         /** @var null|DirtyClass $record */
-        $record = DirtyClass::get()->filter(['Class' => $this->owner->ClassName, 'Type' => $type])->first();
+        $record = DirtyClass::get()->filter($params)->first();
         if (!$record || !$record->exists()) {
-            $record = DirtyClass::create([
-                'Class' => $this->owner->ClassName,
-                'Type'  => $type,
-            ]);
+            $record = DirtyClass::create($params);
             $record->write();
         }
 
@@ -214,6 +215,53 @@ class DataObjectExtension extends DataExtension
     }
 
     /**
+     * Attempt to remove the item from Solr
+     *
+     * @throws ValidationException
+     * @throws HTTPException
+     */
+    private function removeItem(DataObject $item = null)
+    {
+        /** @var DataObject $owner */
+        $owner = $item ?? $this->owner;
+        /** @var DirtyClass $record */
+        $record = $this->getDirtyClass(SolrCoreService::DELETE_TYPE, $owner->ClassName);
+        $record->IDs = $record->IDs ?? '[]'; // If the record is new, or the IDs list is null, default
+        $ids = json_decode($record->IDs, 1);
+
+        try {
+            Injector::inst()->get(SolrCoreService::class)
+                ->updateItems(ArrayList::create([$owner]), SolrCoreService::DELETE_TYPE);
+            // If successful, remove it from the array
+            // Added bonus, array_flip removes duplicates
+            $this->clearIDs($owner, $ids, $record);
+            // @codeCoverageIgnoreStart
+        } catch (Exception $error) {
+            $this->registerException($ids, $record, $error);
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Clear old page type from Solr before publishing if required
+     *
+     * @throws ValidationException
+     * @throws HTTPException
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     */
+    public function onBeforePublish()
+    {
+        // Check for changed classname and delete old record before pushing new if required.
+        if ($this->owner instanceof SiteTree) {
+            $lastPublished = Versioned::get_by_stage(SiteTree::class, Versioned::LIVE)->byID($this->owner->ID);
+            if ($lastPublished && $this->owner->ClassName !== $lastPublished->ClassName) {
+                $this->removeItem($lastPublished);
+            }
+        }
+    }
+
+    /**
      * Push the item to Solr after publishing
      *
      * @throws ValidationException
@@ -231,31 +279,14 @@ class DataObjectExtension extends DataExtension
     }
 
     /**
-     * Attempt to remove the item from Solr
+     * Attempt to remove the item from Solr when deleted
      *
      * @throws ValidationException
      * @throws HTTPException
      */
     public function onAfterDelete(): void
     {
-        /** @var DataObject $owner */
-        $owner = $this->owner;
-        /** @var DirtyClass $record */
-        $record = $this->getDirtyClass(SolrCoreService::DELETE_TYPE);
-        $record->IDs = $record->IDs ?? '[]'; // If the record is new, or the IDs list is null, default
-        $ids = json_decode($record->IDs, 1);
-
-        try {
-            (new SolrCoreService())
-                ->updateItems(ArrayList::create([$owner]), SolrCoreService::DELETE_TYPE);
-            // If successful, remove it from the array
-            // Added bonus, array_flip removes duplicates
-            $this->clearIDs($owner, $ids, $record);
-            // @codeCoverageIgnoreStart
-        } catch (Exception $error) {
-            $this->registerException($ids, $record, $error);
-        }
-        // @codeCoverageIgnoreEnd
+        $this->removeItem();
     }
 
     /**

@@ -77,6 +77,16 @@ SilverStripe\Core\Injector\Injector:
     class: Firesphere\SolrSearch\Stores\PostConfigStore
 ```
 
+#### Additional Solarium options
+If your Solr configuration requires use of the [additional Solarium addDocuments options](https://solarium.readthedocs.io/en/stable/queries/update-query/building-an-update-query/add-command/) for the `SolrIndexTask` to complete properly, these can also be set as config on the SolrCoreService.
+
+Example config:
+```yaml
+Firesphere\SolrSearch\Services\SolrCoreService:
+  add_docs_overwrite: true #boolean
+  add_docs_commitWithin: 1000 #int - value in milliseconds
+```
+
 ### Authentication
 
 Solr supports several ways of adding authentication to the instance.
@@ -286,6 +296,19 @@ Firesphere\SolrSearch\Services\SolrCoreService:
 
 Looking at the `tests` folder, there is a `TestIndexFour`. This index is not loaded unless explicitly asked.
 
+## Excluding unwanted classes from index
+
+To exclude unwanted subclasses from being indexed add these in a list as an `exclude_classes` config on the index. 
+
+For example, if you want to index `SilverStripe\Assets\File` but not it's subclasses `Folder` and `Image`, and you want to index `SilverStripe\CMS\Model\SiteTree` but not `RedirectorPage` the config would look like this:
+
+```yaml
+Firesphere\SolrSearch\Indexes\BaseIndex:
+  exclude_classes:
+    - SilverStripe\CMS\Model\RedirectorPage
+    - SilverStripe\Assets\Folder
+    - SilverStripe\Assets\Image
+```
 
 ----------
 <sup>1</sup> Although not required, it's highly recommended

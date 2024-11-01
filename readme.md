@@ -1,3 +1,5 @@
+**BASED ON [firesphere/solr-search](https://codeberg.org/Firesphere/silverstripe-solr)**
+
 [![Maintainability](https://api.codeclimate.com/v1/badges/55c8967ef25e37182e3d/maintainability)](https://codeclimate.com/github/Firesphere/silverstripe-solr-search/maintainability)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Firesphere/silverstripe-solr-search/badges/quality-score.png?b=primary)](https://scrutinizer-ci.com/g/Firesphere/silverstripe-solr-search/?branch=primary)
 [![Code Coverage](https://scrutinizer-ci.com/g/Firesphere/silverstripe-solr-search/badges/coverage.png?b=primary)](https://scrutinizer-ci.com/g/Firesphere/silverstripe-solr-search/?branch=primary)
