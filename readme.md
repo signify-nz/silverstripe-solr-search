@@ -35,7 +35,7 @@ Solr8
 
 # Installation
 
-`composer require firesphere/solr-search`
+`composer require signify-nz/silverstripe-solr`
 
 More details can be found in the [docs](https://firesphere.github.io/solr-docs/01-Installation.html).
 

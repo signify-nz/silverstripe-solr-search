@@ -61,11 +61,9 @@
     }
   },
   "support": {
-    "email": "simon@firesphere.dev",
-    "issues": "https://codeberg.org/firesphere/silverstripe-solr/issues",
-    "source": "https://codeberg.org/firesphere/silverstripe-solr",
-    "docs": "https://firesphere.github.io/solr-docs",
-    "chat": "https://silverstripe-users.slack.com/archives/C9KB3U0P8"
+    "issues": "https://github.com/signify-nz/silverstripe-solr/issues",
+    "source": "https://github.com/signify-nz/silverstripe-solr",
+    "docs": "https://firesphere.github.io/solr-docs"
   },
   "suggest": {
     "ext-pcntl": "Support for multi-core indexing",

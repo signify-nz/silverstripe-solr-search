@@ -1,7 +1,7 @@
 # Installing the module
 
 Best practice is to use composer:
-`composer require firesphere/solr-search`
+`composer require signify-nz/silverstripe-solr`
 
 ## Manual setup
 
