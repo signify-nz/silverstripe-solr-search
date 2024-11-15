@@ -6,14 +6,7 @@ Installation and usage are described in this documentation. See the sidebar for 
 
 ## Support
 
-There are multiple ways to support our work. This can be through Ko-Fi, GitStore, or Paypal directly (newzealand@casa-laguna.net).
-
 If you have questions, or improvements, please raise an issue, and if you want, an accompanying Pull Request.
-
-# Sponsors
-
-- [XD Designers (Netherlands)](https://www.xd.nl)
-
 
 **NOTE**
 

@@ -60,22 +60,3 @@ e.g. FilterFields does not have an overlap with FacetFields
 The package tag is to help the API documentation to stay up to date.
 
 We are aware it's a bit of overkill and redundant, but it does not have any impact on the actual code.
-
-# GitStore
-
-As you may know, Open Source Software is written by volunteers. We volunteer a lot of
-our free time to work on this (and other) software.
-
-If you can afford it, we would appreciate it a lot if you would sponsor us through GitStore.
-
-## But your software is free and open, isn't it?
-
-Yes, but it still costs us time to respond to issues, look at pull requests
-or even support you with problems outside of the module.
-
-We are happy to help you, but we have put a lot of time and effort in to writing software
-that is useful to you, the community. We ask you, would you give something back?
-It is not mandatory, of course.
-
-We will add you to the list of sponsors, if you decide to thank the maintainers for this
-work.
