@@ -55,7 +55,7 @@ class SearchAdmin extends ModelAdmin
     {
         parent::init();
 
-        Requirements::css('firesphere/solr-search:client/dist/main.css');
+        Requirements::css('signify-nz/silverstripe-solr:client/dist/main.css');
     }
 
     protected function getManagedModelTabs()
