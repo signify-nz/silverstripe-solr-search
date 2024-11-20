@@ -22,7 +22,7 @@ Available extension points:
 
 ## Updating the typemap
 
-The type mapping is defined in [`typemap.yml`](https://github.com/signify-nz/silverstripe-solr/blob/2.x/_config/typemap.yml).
+The type mapping is defined in [`typemap.yml`](../_config/typemap.yml).
 
 To override parts of the typemap to use a different mapping, you can set the following in your application
 yml:

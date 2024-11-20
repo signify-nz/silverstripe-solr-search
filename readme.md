@@ -10,7 +10,7 @@ If this module breaks your website, you get to keep all the pieces.
 
 # Modern SilverStripe Solr Search
 
-[Full documentation](https://firesphere.github.io/solr-docs/) or see the [docs folder](docs/index.md). Please read the documentation before asking questions.
+See the [docs folder](docs/index.md). Please read the documentation before asking questions.
 A lot of the questions are answered by reading the documentation.
 
 ## Solarium documentation:
@@ -34,4 +34,4 @@ Solr8
 
 `composer require signify-nz/silverstripe-solr`
 
-More details can be found in the [docs](https://firesphere.github.io/solr-docs/01-Installation.html).
+More details can be found in the [docs](docs/01-Installation.md).
