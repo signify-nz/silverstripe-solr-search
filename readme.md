@@ -17,14 +17,6 @@ A lot of the questions are answered by reading the documentation.
 
 https://solarium.readthedocs.io
 
-## API Docs:
-
-https://firesphere.github.io/solr-api/
-
-## Usage and installation docs:
-
-https://firesphere.github.io/solr-docs/
-
 ## Supports
 
 Solr4 backward compatibility is available, default support is
