@@ -20,7 +20,9 @@ https://solarium.readthedocs.io
 ## Supports
 
 Solr4 backward compatibility is available
+
 Default support is Solr8
+
 Solr9 is supported
 
 # Installation
