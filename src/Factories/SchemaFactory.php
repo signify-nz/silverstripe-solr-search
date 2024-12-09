@@ -253,7 +253,7 @@ class SchemaFactory extends ViewableData
         }
         $templatePath = SolrCoreService::config()->get('paths');
         $customPath = $templatePath['base_path'] ?? false;
-        $path = ModuleLoader::getModule('signify-nz/silverstripe-solr')->getPath();
+        $path = ModuleLoader::getModule('signify-nz/silverstripe-solr-search')->getPath();
 
         if ($customPath) {
             $path = sprintf($customPath, Director::baseFolder());

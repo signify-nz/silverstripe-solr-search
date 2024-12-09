@@ -1,7 +1,7 @@
 # Installing the module
 
 Best practice is to use composer:
-`composer require signify-nz/silverstripe-solr`
+`composer require signify-nz/silverstripe-solr-search`
 
 ## Manual setup
 

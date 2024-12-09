@@ -1,5 +1,5 @@
 {
-  "name": "signify-nz/silverstripe-solr",
+  "name": "signify-nz/silverstripe-solr-search",
   "description": "Search a SilverStripe site with Solr",
   "type": "silverstripe-vendormodule",
   "license": "LGPL-3.0-or-later",
@@ -64,9 +64,9 @@
     "firesphere/solr-search": "^2"
   },
   "support": {
-    "issues": "https://github.com/signify-nz/silverstripe-solr/issues",
-    "source": "https://github.com/signify-nz/silverstripe-solr",
-    "security": "https://github.com/signify-nz/silverstripe-solr/security"
+    "issues": "https://github.com/signify-nz/silverstripe-solr-search/issues",
+    "source": "https://github.com/signify-nz/silverstripe-solr-search",
+    "security": "https://github.com/signify-nz/silverstripe-solr-search/security"
   },
   "minimum-stability": "dev",
   "prefer-stable": true
