@@ -107,13 +107,3 @@ Yes, a head-scratcher! Re-run that specific group `SolrIndexTask group={Group Nu
 
 Sometimes, for an unknown reason, the `POST` or `GET` part of the request string is included in the XML that is
 sent to Solr.
-
-### To no avail, no solution worked
-
-If it is related to the module, and not related to actual permissions or other server set-up issues, and you
- can not make a public issue, you can contact us at
- 
-`solr[@]casa-laguna[.]net`
-
-Please note that we may charge you for investigating and helping solve your issues. This module is FOSS, but
-our time is not unlimited and we may feel an issue is not worth the effort unless we get paid for our time.

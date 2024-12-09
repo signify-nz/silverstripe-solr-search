@@ -5,6 +5,8 @@
  * @package Firesphere\Solr\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ * @author Signify Ltd <info@signify.co.nz>
+ * Signify Ltd modified code in Nov 2024
  */
 
 namespace Firesphere\SolrSearch\Admins;
@@ -55,7 +57,7 @@ class SearchAdmin extends ModelAdmin
     {
         parent::init();
 
-        Requirements::css('firesphere/solr-search:client/dist/main.css');
+        Requirements::css('signify-nz/silverstripe-solr-search:client/dist/main.css');
     }
 
     protected function getManagedModelTabs()

@@ -1,5 +1,5 @@
 {
-  "name": "firesphere/solr-search",
+  "name": "signify-nz/silverstripe-solr-search",
   "description": "Search a SilverStripe site with Solr",
   "type": "silverstripe-vendormodule",
   "license": "LGPL-3.0-or-later",
@@ -60,19 +60,13 @@
       "Firesphere\\SolrSearch\\Tests\\": "tests"
     }
   },
-  "support": {
-    "email": "simon@firesphere.dev",
-    "issues": "https://codeberg.org/firesphere/silverstripe-solr/issues",
-    "source": "https://codeberg.org/firesphere/silverstripe-solr",
-    "docs": "https://firesphere.github.io/solr-docs",
-    "chat": "https://silverstripe-users.slack.com/archives/C9KB3U0P8"
+  "replace": {
+    "firesphere/solr-search": "^2"
   },
-  "suggest": {
-    "ext-pcntl": "Support for multi-core indexing",
-    "firesphere/fts-compat": "Migration support from Fulltext Search module",
-    "firesphere/fluent-solr-search": "For Fluent support",
-    "firesphere/subsite-solr-search": "Support for Subsites",
-    "firesphere/solr-member-permissions": "Fine grained per-member permission checks"
+  "support": {
+    "issues": "https://github.com/signify-nz/silverstripe-solr-search/issues",
+    "source": "https://github.com/signify-nz/silverstripe-solr-search",
+    "security": "https://github.com/signify-nz/silverstripe-solr-search/security"
   },
   "minimum-stability": "dev",
   "prefer-stable": true

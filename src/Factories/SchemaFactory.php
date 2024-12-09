@@ -5,6 +5,8 @@
  * @package Firesphere\Solr\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ * @author Signify Ltd <info@signify.co.nz>
+ * Signify Ltd modified code in Nov 2024
  */
 
 namespace Firesphere\SolrSearch\Factories;
@@ -251,7 +253,7 @@ class SchemaFactory extends ViewableData
         }
         $templatePath = SolrCoreService::config()->get('paths');
         $customPath = $templatePath['base_path'] ?? false;
-        $path = ModuleLoader::getModule('firesphere/solr-search')->getPath();
+        $path = ModuleLoader::getModule('signify-nz/silverstripe-solr-search')->getPath();
 
         if ($customPath) {
             $path = sprintf($customPath, Director::baseFolder());
