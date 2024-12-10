@@ -96,8 +96,8 @@ class SubsiteState extends SiteState implements SiteStateInterface
     public function updateQuery(&$query)
     {
         // Only add a Subsite filter if there are actually subsites to filter on
-        if (!$this->config()->get('combine_subsite_search') && Subsite::currentSubsite()) {
-            $query->addFilter('SubsiteID', Subsite::currentSubsite()->ID);
+        if (!$this->config()->get('combine_subsite_search')) {
+            $query->addFilter('SubsiteID', BaseSubsiteState::singleton()->getSubsiteId());
         }
     }
 }
