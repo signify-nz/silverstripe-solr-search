@@ -357,4 +357,14 @@ class DataObjectExtension extends DataExtension
 
         return $return;
     }
+
+    /**
+     * Ensure all dataobjects will index a `_SubsiteID` field
+     *
+     * @return int | null
+     */
+    public function getSubsiteID()
+    {
+        return $this->owner->getField('SubsiteID');
+    }
 }

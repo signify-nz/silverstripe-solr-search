@@ -12,3 +12,7 @@ Only:
 Firesphere\SolrSearch\Indexes\BaseIndex:
   extensions:
     - Firesphere\SolrSearch\Extensions\SubsitesExtension
+
+Firesphere\SolrSearch\Factories\DocumentFactory:
+  extensions:
+    - Firesphere\SolrSearch\Extensions\SubsitesDocumentFactoryExtension

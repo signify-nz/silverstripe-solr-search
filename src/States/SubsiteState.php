@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class SubsiteState|Firesphere\SolrSearch\States\SubsiteState Enable each subsite to be indexed independently by
  * switching the SiteState
@@ -17,10 +18,10 @@ namespace Firesphere\SolrSearch\States;
 use Firesphere\SolrSearch\Interfaces\SiteStateInterface;
 use Firesphere\SolrSearch\Queries\BaseQuery;
 use Firesphere\SolrSearch\States\SiteState;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Subsites\Model\Subsite;
 use SilverStripe\Subsites\State\SubsiteState as BaseSubsiteState;
+use Minimalcode\Search\Criteria;
+use SilverStripe\Assets\File;
 
 /**
  * Class \Firesphere\SolrSubsites\States\SubsiteState
@@ -32,6 +33,9 @@ use SilverStripe\Subsites\State\SubsiteState as BaseSubsiteState;
 class SubsiteState extends SiteState implements SiteStateInterface
 {
     private static $combine_subsite_search = false;
+    private static $share_main_files = true;
+
+    public const ALL_SUBSITES = 'all';
 
     public function isEnabled(): bool
     {
@@ -95,9 +99,19 @@ class SubsiteState extends SiteState implements SiteStateInterface
      */
     public function updateQuery(&$query)
     {
-        // Only add a Subsite filter if there are actually subsites to filter on
+        // Only add a Subsite filter if this hasn't been turned off
         if (!$this->config()->get('combine_subsite_search')) {
-            $query->addFilter('SubsiteID', BaseSubsiteState::singleton()->getSubsiteId());
+            // Show results that match the current subsite ID or are on all subsites
+            $filterSubsite = Criteria::where('SubsiteID')
+                ->in([BaseSubsiteState::singleton()->getSubsiteId(), static::ALL_SUBSITES]);
+            // Unless turned off, include all Files with SubsiteID = 0 regardless of current subsite
+            if ($this->config()->get('share_main_files')) {
+                $filterSubsite->orWhere(
+                    Criteria::where('ClassHierarchy')->contains(File::class)
+                        ->andWhere('SubsiteID')->is(0)
+                );
+            }
+            $query->addFilter('SubsiteID', $filterSubsite);
         }
     }
 }
