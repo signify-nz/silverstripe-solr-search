@@ -32,7 +32,18 @@ use SilverStripe\Assets\File;
  */
 class SubsiteState extends SiteState implements SiteStateInterface
 {
+    /**
+     * Combine all results from all subsites
+     *
+     * @var boolean
+     */
     private static $combine_subsite_search = false;
+
+    /**
+     * Include main site files in subsite search results if files are indexed
+     *
+     * @var boolean
+     */
     private static $share_main_files = true;
 
     public const ALL_SUBSITES = 'all';

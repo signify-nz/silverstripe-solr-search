@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * Class SubsitesDocumentFactoryExtension|Firesphere\SolrSearch\Extensions\SubsitesDocumentFactoryExtension
+ *
+ * @package Firesphere\Solr
+ * @author Signify Ltd <info@signify.co.nz>
+ * @copyright Copyright (c) 2024 - now() Signify Ltd
+ */
+
 namespace Firesphere\SolrSearch\Extensions;
 
 use Firesphere\SolrSearch\States\SubsiteState;
