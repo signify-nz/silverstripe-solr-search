@@ -10,11 +10,17 @@
 
 namespace Firesphere\SolrSearch\Extensions;
 
+use Firesphere\SolrSearch\Factories\DocumentFactory;
 use Firesphere\SolrSearch\States\SubsiteState;
 use SilverStripe\Core\Extension;
 
 /**
- * Update Documents per locale
+ * Class \Firesphere\SolrSearch\Extensions\SubsitesDocumentFactoryExtension
+ *
+ * Add support for indexed classes without a SubsiteID field to appear on all subsites
+ *
+ * @package Firesphere\Solr
+ * @property DocumentFactory|SubsitesDocumentFactoryExtension $owner
  */
 class SubsitesDocumentFactoryExtension extends Extension
 {

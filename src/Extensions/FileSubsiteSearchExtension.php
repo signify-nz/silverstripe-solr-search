@@ -10,9 +10,18 @@
 
 namespace Firesphere\SolrSearch\Extensions;
 
+use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Core\Extension;
 
+/**
+ * Class \Firesphere\SolrSearch\Extensions\FileSubsiteSearchExtension
+ *
+ * Add support for subsites to index Files with SubsiteID from parent Folder
+ *
+ * @package Firesphere\Solr
+ * @property File|FileSubsiteSearchExtension $owner
+ */
 class FileSubsiteSearchExtension extends Extension
 {
     public function getSubsiteID()
