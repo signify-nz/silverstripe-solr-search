@@ -5,7 +5,7 @@
  *
  * @package Firesphere\Solr
  * @author Signify Ltd <info@signify.co.nz>
- * @copyright Copyright (c) 2024 - now() Signify Ltd
+ * @copyright Copyright 2024 Signify Ltd
  */
 
 namespace Firesphere\SolrSearch\Extensions;
