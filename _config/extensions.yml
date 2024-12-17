@@ -4,3 +4,15 @@ SilverStripe\ORM\DataObject:
 SilverStripe\Forms\GridField\GridField:
   extensions:
     - Firesphere\SolrSearch\Extensions\GridFieldExtension
+
+---
+Only:
+  moduleexists: 'silverstripe/subsites'
+---
+Firesphere\SolrSearch\Indexes\BaseIndex:
+  extensions:
+    - Firesphere\SolrSearch\Extensions\SubsitesExtension
+
+Firesphere\SolrSearch\Factories\DocumentFactory:
+  extensions:
+    - Firesphere\SolrSearch\Extensions\SubsitesDocumentFactoryExtension
