@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class SearchSynonym|Firesphere\SolrSearch\Models\SearchSynonym Object for handling synonyms from the CMS
  *
@@ -12,10 +13,13 @@
 namespace Firesphere\SolrSearch\Models;
 
 use Firesphere\SolrSearch\Admins\SearchAdmin;
+use Firesphere\SolrSearch\Jobs\SolrConfigureJob;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Class \Firesphere\SolrSearch\Models\SearchSynonym
@@ -151,5 +155,36 @@ class SearchSynonym extends DataObject implements PermissionProvider
                 ),
             ],
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function onAfterWrite()
+    {
+        parent::onAfterWrite();
+
+        $this->queueSolrConfigureJob();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function onAfterDelete()
+    {
+        parent::onAfterDelete();
+
+        $this->queueSolrConfigureJob();
+    }
+
+    /**
+     * Add SolrConfigureJob to the job queue.
+     */
+    private function queueSolrConfigureJob()
+    {
+        $queuedJobService = Injector::inst()->get(QueuedJobService::class);
+        $solrConfigureJob = Injector::inst()->create(SolrConfigureJob::class);
+
+        $queuedJobService->queueJob($solrConfigureJob);
     }
 }
