@@ -76,8 +76,8 @@ class SearchAdmin extends ModelAdmin
         $helpText = LiteralField::create(
             'SearchSynonymHelpText',
             '<p style="padding-bottom: 1rem;">To have any changes reflected in the search, the SolrConfigureJob needs to be executed.
-            This job is automatically added to the queue when creating, updating, or removing a synonym,
-            and will display in search after the job queue is processed.</p>'
+            This job is automatically added to the queue when creating, updating, or removing a synonym.
+            Changes will display in search after the job queue is processed.</p>'
         );
 
         $form->Fields()->insertBefore('Firesphere-SolrSearch-Models-SearchSynonym', $helpText);
