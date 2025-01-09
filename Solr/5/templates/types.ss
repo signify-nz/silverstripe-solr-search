@@ -151,10 +151,12 @@
     <analyzer type="index">
         <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.SnowballPorterFilterFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
     </analyzer>
     <analyzer type="query">
         <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.SnowballPorterFilterFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
         <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
     </analyzer>
 </fieldType>
