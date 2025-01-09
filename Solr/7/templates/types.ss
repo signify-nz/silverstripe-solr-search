@@ -119,26 +119,6 @@
     NOTE: autoGeneratePhraseQueries="true" tends to not work well for non whitespace delimited languages.
     -->
 <fieldType name="text" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
-    <analyzer type="index">
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-        <!-- in this example, we will only use synonyms at query time
-        <filter class="solr.SynonymGraphFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
-        -->
-        <!-- Case insensitive stop word removal.
-          add enablePositionIncrements=true in both the index and query
-          analyzers to leave a 'gap' for more accurate phrase queries.
-        -->
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.StopFilterFactory"
-                ignoreCase="true"
-                words="stopwords.txt"
-
-        />
-        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1"
-                catenateWords="1"
-                catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
-        <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
-    </analyzer>
     <analyzer type="query">
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
@@ -163,6 +143,13 @@
         <filter class="solr.SnowballPorterFilterFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+        <filter class="solr.StopFilterFactory"
+                ignoreCase="true"
+                words="stopwords.txt"
+        />
+        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1"
+                catenateWords="1"
+                catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
     </analyzer>
 </fieldType>
 <fieldType name="stemfield" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
