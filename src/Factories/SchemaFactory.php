@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class SchemaFactory|Firesphere\SolrSearch\Services\SchemaFactory Base service for generating a schema
  *
@@ -155,9 +156,11 @@ class SchemaFactory extends ViewableData
         $fields = $this->index->getCopyFields();
 
         $return = ArrayList::create();
+        $defaultType = SolrCoreService::singleton()->getSolrVersion() === 4 ? 'htmltext' : 'stemfield';
         foreach ($fields as $field => $copyFields) {
             $item = [
                 'Field' => $field,
+                'Type' => (array_key_exists('type', $copyFields) ? $copyFields['type'] : $defaultType)
             ];
 
             $return->push($item);

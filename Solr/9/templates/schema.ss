@@ -61,7 +61,7 @@
         <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
         <!-- Copyfields -->
         <% loop $CopyFields %>
-            <field name="$Field" type="stemfield" indexed="true" stored="true" multiValued="true"/>
+            <field name="$Field" type="$Type" indexed="true" stored="true" multiValued="true"/>
         <% end_loop %>
         <!-- End Copyfields -->
         <!-- Fulltext fields -->
