@@ -32,8 +32,11 @@ e.g.
 The resulting list can be accessed as an ArrayList, as the example below:
 
 ```html
-<% if $Results.Spellcheck.Count %> <% loop $Results.Spellcheck %> $word <%
-end_loop %> <% end_if %>
+<% if $Results.Spellcheck.Count %>
+    <% loop $Results.Spellcheck %>
+        $word
+    <%end_loop %>
+<% end_if %>
 ```
 
 ## Collated spellchecking
@@ -45,6 +48,9 @@ For example searching for "hesp me", the collation would be "help me"
 The collated spellcheck results can be displayed like so:
 
 ```html
-<% with $Results %> <% if $getCollatedSpellcheck %>$CollatedSpellcheck<% end_if
-%> <% end_with %>
+<% with $Results %>
+    <% if $getCollatedSpellcheck %>
+        $CollatedSpellcheck
+    <% end_if %>
+<% end_with %>
 ```
