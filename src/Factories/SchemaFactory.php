@@ -187,6 +187,8 @@ class SchemaFactory extends ViewableData
             // Allow all fields to be in a copyfield via a shorthand
             if ($fields[0] === '*') {
                 $fields = $this->index->getFulltextFields();
+            } else {
+                unset($fields['type']);
             }
 
             foreach ($fields as $copyField) {
