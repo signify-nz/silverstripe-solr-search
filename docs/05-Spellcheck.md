@@ -35,7 +35,7 @@ The resulting list can be accessed as an ArrayList, as the example below:
 <% if $Results.Spellcheck.Count %>
     <% loop $Results.Spellcheck %>
         $word
-    <%end_loop %>
+    <% end_loop %>
 <% end_if %>
 ```
 
