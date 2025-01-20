@@ -61,7 +61,7 @@
         <field name="ViewStatus" type="string" indexed="true" stored="true" required="true" multiValued="true"/>
         <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
         <% loop $CopyFields %>
-            <field name="$Field" type="htmltext" indexed="true" stored="true" multiValued="true"/>
+            <field name="$Field" type="$Type" indexed="true" stored="true" multiValued="true"/>
         <% end_loop %>
         <% loop $FulltextFieldDefinitions %>
             <field name="$Field" type="$Type" indexed="true" stored="$Stored" multiValued="$MultiValued"/>
