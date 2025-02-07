@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class DataObjectExtension|Firesphere\SolrSearch\Extensions\DataObjectExtension Adds checking if changes should be
  * pushed to Solr
@@ -30,6 +31,7 @@ use SilverStripe\Security\InheritedPermissionsExtension;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Versioned\Versioned;
 use Solarium\Exception\HttpException;
+use Firesphere\SolrSearch\Traits\IndexedParentSolrUpdate;
 
 /**
  * Class \Firesphere\SolrSearch\Compat\DataObjectExtension
@@ -366,5 +368,34 @@ class DataObjectExtension extends DataExtension
     public function getSubsiteID()
     {
         return $this->owner->getField('SubsiteID');
+    }
+
+    /**
+     * Recursive reindex for parent objects that are indexed or have indexed parents
+     *
+     * @param DataObject $parent
+     * @return void
+     */
+    public function doParentReindex($parent)
+    {
+        $objectTraits = class_uses($this->owner);
+        $indexParentTrait = IndexedParentSolrUpdate::class;
+
+        if (!in_array($indexParentTrait, $objectTraits)) {
+            return;
+        } else {
+            if ($parent) {
+                $service = Injector::inst()->get(SolrCoreService::class);
+
+                if ($this->shouldPush() && $service->isValidClass($parent->ClassName)) {
+                    $publishedParent = Versioned::get_by_stage($parent::class, Versioned::LIVE)->byID($parent->ID);
+                    $this->pushToSolr($publishedParent);
+                } else if ($parent->hasMethod('getIndexedParent') && $parent->isPublished()) {
+                    $this->doParentReindex($parent->getIndexedParent());
+                }
+
+                $this->doReindex();
+            }
+        }
     }
 }
