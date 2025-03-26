@@ -477,7 +477,7 @@
         <!-- Solr Internal Query Caches
 
              There is one implementation of cache available for Solr 9,
-             CaffeieneCache.
+             CaffeineCache.
         -->
 
         <!-- Filter Cache
@@ -489,7 +489,7 @@
              autowarmCount is the number of items to prepopulate.
 
              Parameters:
-               class - the SolrCache implementation CaffeieneCache
+               class - the SolrCache implementation CaffeineCache
                size - the maximum number of entries in the cache
                initialSize - the initial capacity (number of entries) of
                    the cache.  (see java.util.HashMap)
@@ -529,7 +529,7 @@
              even if not configured here.
           -->
         <!--
-           <fieldValueCache class="solr.CaffeieneCache"
+           <fieldValueCache class="solr.CaffeineCache"
                             size="512"
                             autowarmCount="128"
                             showItems="32" />
@@ -546,7 +546,7 @@
           -->
         <!--
            <cache name="myUserCache"
-                  class="solr.CaffeieneCache"
+                  class="solr.CaffeineCache"
                   size="4096"
                   initialSize="1024"
                   autowarmCount="1024"
