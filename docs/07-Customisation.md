@@ -104,7 +104,7 @@ There are many situations in which an indexed DataObject may be linked to other 
 To implement this behaviour, add the `IndexedParentSolrUpdate` trait to the DataObject along with a `getIndexedParent` function that defines indexed parent. For example:
 
 ```php
-class ExampleItem extends DataObject
+class ExampleItem extends BaseElement
 {
     use IndexedParentSolrUpdate;
 
