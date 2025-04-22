@@ -378,10 +378,9 @@ class DataObjectExtension extends DataExtension
      */
     public function doParentReindex($parent)
     {
-        $objectTraits = class_uses($this->owner);
-        $indexParentTrait = IndexedParentSolrUpdate::class;
+        $parentHasIndexedParent = $parent->hasMethod('getIndexedParent');
 
-        if (!in_array($indexParentTrait, $objectTraits)) {
+        if ($parentHasIndexedParent) {
             return;
         } else {
             if ($parent) {
@@ -390,7 +389,7 @@ class DataObjectExtension extends DataExtension
                 if ($this->shouldPush() && $service->isValidClass($parent->ClassName)) {
                     $publishedParent = Versioned::get_by_stage($parent::class, Versioned::LIVE)->byID($parent->ID);
                     $this->pushToSolr($publishedParent);
-                } else if ($parent->hasMethod('getIndexedParent') && $parent->isPublished()) {
+                } else if ($parentHasIndexedParent && $parent->isPublished()) {
                     $this->doParentReindex($parent->getIndexedParent());
                 }
 
