@@ -379,22 +379,21 @@ class DataObjectExtension extends DataExtension
     public function doParentReindex($parent)
     {
         $parentHasIndexedParent = $parent->hasMethod('getIndexedParent');
+        $objHasIndexedParent = $this->owner->hasMethod('getIndexedParent');
 
-        if ($parentHasIndexedParent) {
+        if (!$objHasIndexedParent) {
             return;
-        } else {
-            if ($parent) {
-                $service = Injector::inst()->get(SolrCoreService::class);
+        } else if ($parent) {
+            $service = Injector::inst()->get(SolrCoreService::class);
 
-                if ($this->shouldPush() && $service->isValidClass($parent->ClassName)) {
-                    $publishedParent = Versioned::get_by_stage($parent::class, Versioned::LIVE)->byID($parent->ID);
-                    $this->pushToSolr($publishedParent);
-                } else if ($parentHasIndexedParent && $parent->isPublished()) {
-                    $this->doParentReindex($parent->getIndexedParent());
-                }
-
-                $this->doReindex();
+            if ($this->shouldPush() && $service->isValidClass($parent->ClassName)) {
+                $publishedParent = Versioned::get_by_stage($parent::class, Versioned::LIVE)->byID($parent->ID);
+                $this->pushToSolr($publishedParent);
+            } else if ($parentHasIndexedParent && $parent->isPublished()) {
+                $this->doParentReindex($parent->getIndexedParent());
             }
+
+            $this->doReindex();
         }
     }
 }
