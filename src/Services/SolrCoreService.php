@@ -324,10 +324,9 @@ class SolrCoreService
      *       1 means "result version is higher"
      *       0 means "result version is equal"
      *      -1 means "result version is lower"
-     * We want to use the version "higher or equal to", because the
-     * configs are for version X-and-up.
-     * We loop through the versions available from high to low
-     * therefore, if the version is lower, we want to check the next config version
+     * We want to use the version "equal to or less than", 
+     * because there are non-backwards compatible changes in Solr version 9.
+     * We loop through the versions available from high to low.
      *
      * If no valid version is found, throw an error
      *
@@ -354,11 +353,17 @@ class SolrCoreService
         $result = $client->get('solr/admin/info/system?wt=json', $clientOptions);
         $result = json_decode($result->getBody(), 1);
 
+        $lastKey = array_key_last(static::$solr_versions);
+        $lastVersion = static::$solr_versions[$lastKey];
+
         foreach (static::$solr_versions as $version) {
             $compare = version_compare($version, $result['lucene']['solr-spec-version']);
-            if ($compare !== -1) {
+            if ($compare === 0 || $compare === -1) {
                 list($v) = explode('.', $version);
                 return (int)$v;
+            }
+            if ($version === $lastVersion) {
+                return 4;
             }
         }
 
