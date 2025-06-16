@@ -357,8 +357,13 @@ class SolrCoreService
         $lastVersion = static::$solr_versions[$lastKey];
 
         foreach (static::$solr_versions as $version) {
-            $compare = version_compare($version, $result['lucene']['solr-spec-version']);
-            if ($compare === 0 || $compare === -1) {
+            $serverVersion = $result['lucene']['solr-spec-version'];
+            $compare = version_compare($version, $serverVersion);
+            if (
+                intval($version) === intval($serverVersion) ||
+                $compare === 0 ||
+                $compare === -1
+            ) {
                 list($v) = explode('.', $version);
                 return (int)$v;
             }
