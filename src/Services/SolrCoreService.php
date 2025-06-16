@@ -360,7 +360,7 @@ class SolrCoreService
             $serverVersion = $result['lucene']['solr-spec-version'];
             $compare = version_compare($version, $serverVersion);
             if (
-                intval($version) === intval($serverVersion) ||
+                (int)$version === (int)$serverVersion ||
                 $compare === 0 ||
                 $compare === -1
             ) {
