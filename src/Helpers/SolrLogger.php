@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class SolrLogger|Firesphere\SolrSearch\Helpers\SolrLogger Log errors to the Database
  *
@@ -10,6 +11,7 @@
 namespace Firesphere\SolrSearch\Helpers;
 
 use Countable;
+use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Models\SolrLog;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use GuzzleHttp\Client;
@@ -98,7 +100,7 @@ class SolrLogger
     }
 
     /**
-     * Save the latest Solr errors to the log
+     * Save the latest core-relevant Solr errors to the log
      *
      * @param string $type
      * @throws HTTPException
@@ -115,14 +117,24 @@ class SolrLogger
         $response = $this->client->get('solr/admin/info/logging', $options);
 
         $arrayResponse = json_decode($response->getBody(), true);
+        $indexNames = [];
+        $validIndexes = (new SolrCoreService())->getValidIndexes();
+
+        foreach ($validIndexes as $validIndex) {
+            /** @var BaseIndex $index */
+            $index = Injector::inst()->get($validIndex);
+            array_push($indexNames, $index->getIndexName());
+        }
 
         foreach ($arrayResponse['history']['docs'] as $error) {
-            $filter = [
-                'Timestamp' => $error['time'],
-                'Index'     => $error['core'] ?? 'x:Unknown',
-                'Level'     => $error['level'],
-            ];
-            $this->findOrCreateLog($type, $filter, $error);
+            if (in_array($error['core'], $indexNames) == true || $error['core'] == '') {
+                $filter = [
+                    'Timestamp' => $error['time'],
+                    'Index'     => $error['core'] ?? 'x:Unknown',
+                    'Level'     => $error['level'],
+                ];
+                $this->findOrCreateLog($type, $filter, $error);
+            }
         }
     }
 
