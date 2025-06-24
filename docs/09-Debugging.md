@@ -17,6 +17,7 @@ For more thorough debugging, have a look at the [Solarium docs](https://solarium
 # Logging
 
 Every error triggers the `SolrLogger`, which retrieves the errors from Solr and stores them in the database.
+Errors are stored in the database if the error index matches an index within the relevant core or if there is no error index.
 
 These error logs can only be deleted in dev mode or by administrators.
 
