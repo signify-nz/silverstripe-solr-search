@@ -127,10 +127,12 @@ class SolrLogger
         }
 
         foreach ($arrayResponse['history']['docs'] as $error) {
-            if (in_array($error['core'], $indexNames) == true || $error['core'] == '') {
+            $core = $error['core'] ?? null;
+
+            if (in_array($core, $indexNames) == true || $core == '' || $core == null) {
                 $filter = [
                     'Timestamp' => $error['time'],
-                    'Index'     => $error['core'] ?? 'x:Unknown',
+                    'Index'     => $core ?? 'x:Unknown',
                     'Level'     => $error['level'],
                 ];
                 $this->findOrCreateLog($type, $filter, $error);
