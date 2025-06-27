@@ -123,7 +123,9 @@ class SolrLogger
         foreach ($validIndexes as $validIndex) {
             /** @var BaseIndex $index */
             $index = Injector::inst()->get($validIndex);
-            array_push($indexNames, $index->getIndexName());
+            $indexName = $index->getIndexName();
+            $indexNamePrefixed = 'x:' . $indexName;
+            array_push($indexNames, $indexName, $indexNamePrefixed);
         }
 
         foreach ($arrayResponse['history']['docs'] as $error) {
