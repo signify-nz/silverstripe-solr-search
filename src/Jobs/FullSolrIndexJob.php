@@ -103,7 +103,8 @@ class FullSolrIndexJob extends AbstractQueuedJob
         $this->currentStep = 0;
         $this->isComplete = false;
         $this->configureIndexableData();
-        $this->addMessage('Calculated ' . $this->totalSteps . ' total steps.');
+        $this->addMessage('Calculated ' . $this->totalSteps . ' total batches to index.');
+        $this->getLogger()->info('Calculated ' . $this->totalSteps . ' total batches to index.');
         $this->setService(Injector::inst()->get(SolrCoreService::class));
         if($this->shouldClearIndex) {
             $this->clearIndexes();
@@ -231,9 +232,9 @@ class FullSolrIndexJob extends AbstractQueuedJob
         if (!empty($classes = Config::inst()->get($index, 'exclude_classes'))) {
             $items = $items->exclude(['ClassName' => $classes]);
         }
-        $this->addMessage($baseClass . ' has ' . $items->count() . ' items. Batch length is ' . $batchLength);
         $batches = $items->count() / $batchLength;
-        $this->addMessage('Adding ' . ceil($batches) . ' batches.');
+        $this->addMessage('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
+        $this->getLogger()->info('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
         return ceil($batches);
     }
 
