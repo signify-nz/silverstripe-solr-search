@@ -47,4 +47,3 @@ The code in this documentation is "pseudo-code"; it may not exactly work, but se
 17. About
     1. [About](17-About/01-About.md)
     2. [Plans](17-About/02-Plans.md)
-    3. [Security](17-About/03-Security.md)
