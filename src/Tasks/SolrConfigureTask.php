@@ -19,6 +19,7 @@ use Firesphere\SolrSearch\Stores\PostConfigStore;
 use Firesphere\SolrSearch\Traits\LoggerTrait;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -123,6 +124,7 @@ class SolrConfigureTask extends BuildTask
         $method = $this->getMethod($index, $service);
         $service->$method($index, $configStore);
         $this->getLogger()->info(sprintf('Core %s successfully loaded', $index));
+        $this->logToBrowser(sprintf('Core %s successfully loaded', $index));
     }
 
     /**
@@ -197,6 +199,22 @@ class SolrConfigureTask extends BuildTask
             PHP_EOL,
             PHP_EOL
         );
+        $this->logToBrowser($msg);
+        $this->logToBrowser($error->getMessage());
         SolrLogger::logMessage('ERROR', $msg);
+    }
+
+    /**
+     * Log a message to browser output, only runs if in browser context.
+     *
+     * @param  string $message Message to output to browser
+     * @return void
+     */
+    private function logToBrowser(string $message): void
+    {
+        if (!Director::is_cli()) {
+            echo($message);
+            echo("<br>");
+        }
     }
 }
