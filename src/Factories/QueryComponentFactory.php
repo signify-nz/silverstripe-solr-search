@@ -1,10 +1,13 @@
 <?php
+
 /**
  * class QueryComponentFactory|Firesphere\SolrSearch\Factories\QueryComponentFactory Build a Query component
  *
  * @package Firesphere\Solr\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ * @author Signify Ltd <info@signify.co.nz>
+ * Signify Ltd modified code in July 2025
  */
 
 namespace Firesphere\SolrSearch\Factories;
@@ -12,9 +15,8 @@ namespace Firesphere\SolrSearch\Factories;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Queries\BaseQuery;
 use Firesphere\SolrSearch\Services\SolrCoreService;
-use Firesphere\SolrSearch\Traits\QueryComponentBoostTrait;
-use Firesphere\SolrSearch\Traits\QueryComponentFacetTrait;
-use Firesphere\SolrSearch\Traits\QueryComponentFilterTrait;
+use Minimalcode\Search\Criteria;
+use SilverStripe\Security\Security;
 use Solarium\Core\Query\Helper;
 use Solarium\QueryType\Select\Query\Query;
 
@@ -27,10 +29,6 @@ use Solarium\QueryType\Select\Query\Query;
  */
 class QueryComponentFactory
 {
-    use QueryComponentFilterTrait;
-    use QueryComponentBoostTrait;
-    use QueryComponentFacetTrait;
-
     /**
      * Default fields that should always be added
      *
@@ -72,6 +70,16 @@ class QueryComponentFactory
      * @var BaseIndex Index to query
      */
     protected $index;
+    /**
+     * Terms that are going to be boosted
+     *
+     * @var array
+     */
+    protected $boostTerms = [];
+    /**
+     * @var Query Solarium query
+     */
+    protected $clientQuery;
 
     /**
      * Build the full query
@@ -323,5 +331,257 @@ class QueryComponentFactory
         $spellcheck->setCollate(true);
         $spellcheck->setExtendedResults(true);
         $spellcheck->setCollateExtendedResults(true);
+    }
+
+    /**
+     * Get the boosted terms
+     *
+     * @return array
+     */
+    public function getBoostTerms(): array
+    {
+        return $this->boostTerms;
+    }
+
+    /**
+     * Set the boosted terms manually
+     *
+     * @param array $boostTerms
+     * @return QueryComponentFactory
+     */
+    public function setBoostTerms(array $boostTerms): self
+    {
+        $this->boostTerms = $boostTerms;
+
+        return $this;
+    }
+
+    /**
+     * Build the boosted field setup through Criteria
+     *
+     * Add the index-time boosting to the query
+     */
+    protected function buildBoosts(): void
+    {
+        $boostedFields = $this->query->getBoostedFields();
+        $queries = $this->getQueryArray();
+        foreach ($boostedFields as $field => $boost) {
+            $terms = [];
+            foreach ($queries as $term) {
+                $terms[] = $term;
+            }
+            if (count($terms)) {
+                $booster = Criteria::where(str_replace('.', '_', $field))
+                    ->in($terms)
+                    ->boost($boost);
+                $this->queryArray[] = $booster->getQuery();
+            }
+        }
+    }
+
+    /**
+     * Set boosting at Query time
+     *
+     * @param array $search
+     * @param string $term
+     * @param array $boostTerms
+     * @return array
+     */
+    protected function buildQueryBoost($search, string $term, array &$boostTerms): array
+    {
+        foreach ($search['fields'] as $boostField) {
+            $boostField = str_replace('.', '_', $boostField);
+            $criteria = Criteria::where($boostField)
+                ->is($term)
+                ->boost($search['boost']);
+            $boostTerms[] = $criteria->getQuery();
+        }
+
+        return $boostTerms;
+    }
+
+    /**
+     * Add facets from the index, to make sure Solr returns
+     * the expected facets and their respective count on the
+     * correct fields
+     */
+    protected function buildQueryFacets(): void
+    {
+        $facets = $this->clientQuery->getFacetSet();
+        // Facets should be set from the index configuration
+        foreach ($this->index->getFacetFields() as $config) {
+            $shortClass = getShortFieldName($config['BaseClass']);
+            $underscoredField = str_replace('.', '_', $config['Field']);
+            $field = sprintf('%s_%s', $shortClass, $underscoredField);
+            /** @var Field $facet */
+            $facet = $facets->createFacetField('facet-' . $config['Title']);
+            $facet->setField($field);
+        }
+        // Count however, comes from the query
+        $facets->setMinCount($this->query->getFacetsMinCount());
+    }
+
+    /**
+     * Add AND facet filters based on the current request
+     */
+    protected function buildAndFacetFilterQuery()
+    {
+        $filterFacets = $this->query->getAndFacetFilter();
+        /** @var null|Criteria $criteria */
+        $criteria = null;
+        foreach ($this->index->getFacetFields() as $config) {
+            if (isset($filterFacets[$config['Title']])) {
+                [$filter, $field] = $this->getFieldFacets($filterFacets, $config);
+                $this->createFacetCriteria($criteria, $field, $filter);
+            }
+        }
+        if ($criteria) {
+            $this->clientQuery
+                ->createFilterQuery('andFacets')
+                ->setQuery($criteria->getQuery());
+        }
+    }
+
+    /**
+     * Get the field and it's respected values to filter on to generate Criteria from
+     *
+     * @param array $filterFacets
+     * @param array $config
+     * @return array
+     */
+    protected function getFieldFacets(array $filterFacets, $config): array
+    {
+        $filter = $filterFacets[$config['Title']];
+        $filter = is_array($filter) ? $filter : [$filter];
+        // Fields are "short named" for convenience
+        $shortClass = getShortFieldName($config['BaseClass']);
+        $underscoredField = str_replace('.', '_', $config['Field']);
+        $field = sprintf('%s_%s', $shortClass, $underscoredField);
+
+        return [$filter, $field];
+    }
+
+    /**
+     * Combine all facets as AND facet filters for the results
+     *
+     * @param null|Criteria $criteria
+     * @param string $field
+     * @param array $filter
+     */
+    protected function createFacetCriteria(&$criteria, string $field, array $filter)
+    {
+        // If the criteria is empty, create a new one with a value from the filter array
+        if (!$criteria) {
+            $criteria = Criteria::where($field)->is(array_pop($filter));
+        }
+        // Add the other items in the filter array, as an AND
+        foreach ($filter as $filterValue) {
+            $criteria->andWhere($field)->is($filterValue);
+        }
+    }
+
+    /**
+     * Add OR facet filters based on the current request
+     */
+    protected function buildOrFacetFilterQuery()
+    {
+        $filterFacets = $this->query->getOrFacetFilter();
+        $index = 0;
+        /** @var null|Criteria $criteria */
+        foreach ($this->index->getFacetFields() as $config) {
+            $criteria = null;
+            if (isset($filterFacets[$config['Title']])) {
+                [$filter, $field] = $this->getFieldFacets($filterFacets, $config);
+                $this->createFacetCriteria($criteria, $field, $filter);
+                $this->clientQuery
+                    ->createFilterQuery('orFacet-' . $index++)
+                    ->setQuery($criteria->getQuery());
+            }
+        }
+    }
+
+    /**
+     * Create filter queries
+     */
+    protected function buildFilters(): void
+    {
+        $filters = $this->query->getFilter();
+        foreach ($filters as $field => $value) {
+            $criteria = $this->buildCriteriaFilter($field, $value);
+            $this->clientQuery->createFilterQuery('filter-' . $field)
+                ->setQuery($criteria->getQuery());
+        }
+    }
+
+    /**
+     * Convert a field/value filter pair to a Criteria object that can build part of a Solr query.
+     * If a Criteria object is passed as the value, it will be returned unmodified.
+     *
+     * @param string $field
+     * @param mixed $value
+     * @return Criteria
+     */
+    protected function buildCriteriaFilter(string $field, $value): Criteria
+    {
+        if ($value instanceof Criteria) {
+            return $value;
+        }
+
+        $value = (array)$value;
+
+        return Criteria::where($field)->in($value);
+    }
+
+    /**
+     * Add filtering on canView
+     */
+    protected function buildViewFilter(): void
+    {
+        // Filter by what the user is allowed to see
+        $viewIDs = ['null']; // null is always an option as that means publicly visible
+        $member = Security::getCurrentUser();
+        if ($member && $member->exists()) {
+            // Member is logged in, thus allowed to see these
+            $viewIDs[] = 'LoggedIn';
+
+            /** @var DataList|Group[] $groups */
+            $groups = Security::getCurrentUser()->Groups();
+            if ($groups->count()) {
+                $viewIDs = array_merge($viewIDs, $groups->column('Code'));
+            }
+        }
+        /** Add canView criteria. These are based on {@link DataObjectExtension::ViewStatus()} */
+        $query = Criteria::where('ViewStatus')->in($viewIDs);
+
+        $this->clientQuery->createFilterQuery('ViewStatus')
+            ->setQuery($query->getQuery());
+    }
+
+    /**
+     * Add filtered queries based on class hierarchy
+     * We only need the class itself, since the hierarchy will take care of the rest
+     */
+    protected function buildClassFilter(): void
+    {
+        if (count($this->query->getClasses())) {
+            $classes = $this->query->getClasses();
+            $criteria = Criteria::where('ClassHierarchy')->in($classes);
+            $this->clientQuery->createFilterQuery('classes')
+                ->setQuery($criteria->getQuery());
+        }
+    }
+
+    /**
+     * Remove items to exclude
+     */
+    protected function buildExcludes(): void
+    {
+        $filters = $this->query->getExclude();
+        foreach ($filters as $field => $value) {
+            $criteria = $this->buildCriteriaFilter($field, $value);
+            $criteria = $criteria->not(); // Negate the filter as we're excluding
+            $this->clientQuery->createFilterQuery('exclude-' . $field)
+                ->setQuery($criteria->getQuery());
+        }
     }
 }

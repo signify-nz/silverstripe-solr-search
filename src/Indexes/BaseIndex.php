@@ -7,7 +7,7 @@
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
  * @author Signify Ltd <info@signify.co.nz>
- * Signify Ltd modified code in Oct 2024
+ * Signify Ltd modified code in July 2025
  */
 
 namespace Firesphere\SolrSearch\Indexes;
@@ -23,11 +23,9 @@ use Firesphere\SolrSearch\Queries\BaseQuery;
 use Firesphere\SolrSearch\Results\SearchResult;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Firesphere\SolrSearch\States\SiteState;
-use Firesphere\SolrSearch\Traits\BaseIndexTrait;
 use Firesphere\SolrSearch\Traits\GetterSetterTrait;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Discovery\Psr17FactoryDiscovery;
 use LogicException;
+use ReflectionClass;
 use ReflectionException;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
@@ -37,14 +35,14 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Deprecation;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDate;
+use SilverStripe\ORM\FieldType\DBString;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\View\ArrayData;
-use Solarium\Client as SolariumClient;
-use Solarium\Core\Client\Adapter\Psr18Adapter;
 use Solarium\Exception\HttpException;
 use Solarium\QueryType\Select\Query\Query;
 use Solarium\QueryType\Select\Result\Result;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Base for creating a new Solr core.
@@ -60,7 +58,6 @@ abstract class BaseIndex
     use Configurable;
     use Injectable;
     use GetterSetterTrait;
-    use BaseIndexTrait;
 
     /**
      * Field types that can be added
@@ -106,6 +103,49 @@ abstract class BaseIndex
      * @var bool Include dedicated spellcheck field to remove stemming
      */
     private static $include_dedicated_spellcheck_field = true;
+    /**
+     * @var Client Query client
+     */
+    protected $client;
+    /**
+     * @var array Facet fields
+     */
+    protected $facetFields = [];
+    /**
+     * @var array Fulltext fields
+     */
+    protected $fulltextFields = [];
+    /**
+     * @var array Filterable fields
+     */
+    protected $filterFields = [];
+    /**
+     * @var array Sortable fields
+     */
+    protected $sortFields = [];
+    /**
+     * @var string Default search field
+     */
+    protected $defaultField = '_text';
+    /**
+     * @var array Stored fields
+     */
+    protected $storedFields = [];
+    /**
+     * @var array Fields to copy to the default fields
+     */
+    protected $copyFields = [
+        '_text' => [
+            '*',
+        ],
+    ];
+    /**
+     * usedAllFields is used to determine if the addAllFields method has been called
+     * This is to prevent a notice if there is no yml.
+     *
+     * @var bool
+     */
+    protected $usedAllFields = false;
 
     /**
      * BaseIndex constructor.
@@ -147,13 +187,6 @@ abstract class BaseIndex
 
         return $endpoints;
     }
-
-    /**
-     * Name of this index.
-     *
-     * @return string
-     */
-    abstract public function getIndexName();
 
     /**
      * Required to initialise the fields.
@@ -455,5 +488,373 @@ abstract class BaseIndex
     public function isRetry(): bool
     {
         return $this->retry;
+    }
+
+    /**
+     * Return the copy fields
+     *
+     * @return array
+     */
+    public function getCopyFields(): array
+    {
+        $this->setSpellcheckField();
+
+        return $this->copyFields;
+    }
+
+    /**
+     * Set the copy fields
+     *
+     * @param array $copyField
+     * @return $this
+     */
+    public function setCopyFields($copyField): self
+    {
+        $this->copyFields = $copyField;
+
+        $this->setSpellcheckField();
+
+        return $this;
+    }
+
+    /**
+     * Set the default copy field to use spellcheck with no stemming unless
+     * set to false in config.
+     *
+     * @return void
+     */
+    public function setSpellcheckField()
+    {
+        $fields = $this->copyFields;
+
+        $spellcheckNoStemming = $this->config()->get('include_dedicated_spellcheck_field');
+
+        $spellcheckFieldExists = array_key_exists('_spellcheckText', $fields);
+
+        if (!$spellcheckFieldExists && $spellcheckNoStemming == true) {
+            $this->addCopyField('_spellcheckText', ['*', 'type' => 'textSpell']);
+        }
+    }
+
+    /**
+     * Return the default field for this index
+     *
+     * @return string
+     */
+    public function getDefaultField(): string
+    {
+        return $this->defaultField;
+    }
+
+    /**
+     * Set the default field for this index
+     *
+     * @param string $defaultField
+     * @return $this
+     */
+    public function setDefaultField($defaultField): self
+    {
+        $this->defaultField = $defaultField;
+
+        return $this;
+    }
+
+    /**
+     * Add a field to sort on
+     *
+     * @param $sortField
+     * @return $this
+     */
+    public function addSortField($sortField): self
+    {
+        if (
+            !in_array($sortField, $this->getFulltextFields(), true) &&
+            !in_array($sortField, $this->getFilterFields(), true)
+        ) {
+            $this->addFulltextField($sortField);
+            $this->sortFields[] = $sortField;
+        }
+
+        $this->setSortFields(array_unique($this->getSortFields()));
+
+        return $this;
+    }
+
+    /**
+     * Get the fulltext fields
+     *
+     * @return array
+     */
+    public function getFulltextFields(): array
+    {
+        return array_values(
+            array_unique(
+                $this->fulltextFields
+            )
+        );
+    }
+
+    /**
+     * Set the fulltext fields
+     *
+     * @param array $fulltextFields
+     * @return $this
+     */
+    public function setFulltextFields($fulltextFields): self
+    {
+        $this->fulltextFields = $fulltextFields;
+
+        return $this;
+    }
+
+    /**
+     * Get the filter fields
+     *
+     * @return array
+     */
+    public function getFilterFields(): array
+    {
+        return $this->filterFields;
+    }
+
+    /**
+     * Set the filter fields
+     *
+     * @param array $filterFields
+     * @return $this
+     */
+    public function setFilterFields($filterFields): self
+    {
+        $this->filterFields = $filterFields;
+
+        return $this;
+    }
+
+    /**
+     * Add a single Fulltext field
+     *
+     * @param string $fulltextField
+     * @param null|string $forceType
+     * @param array $options
+     * @return $this
+     */
+    public function addFulltextField($fulltextField, $forceType = null, $options = []): self
+    {
+        if ($forceType) {
+            Deprecation::notice('5.0', 'ForceType should be handled through casting');
+        }
+
+        $key = array_search($fulltextField, $this->getFilterFields(), true);
+
+        if (!$key) {
+            $this->fulltextFields[] = $fulltextField;
+        }
+
+        if (isset($options['boost'])) {
+            $this->addBoostedField($fulltextField, [], $options['boost']);
+        }
+
+        if (isset($options['stored'])) {
+            $this->storedFields[] = $fulltextField;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the sortable fields
+     *
+     * @return array
+     */
+    public function getSortFields(): array
+    {
+        return $this->sortFields;
+    }
+
+    /**
+     * Set/override the sortable fields
+     *
+     * @param array $sortFields
+     * @return $this
+     */
+    public function setSortFields($sortFields): self
+    {
+        $this->sortFields = $sortFields;
+
+        return $this;
+    }
+
+    /**
+     * Add all text-type fields to the given index
+     *
+     * @throws ReflectionException
+     */
+    public function addAllFulltextFields()
+    {
+        $this->addAllFieldsByType(DBString::class);
+    }
+
+    /**
+     * Add all database-backed text fields as fulltext searchable fields.
+     *
+     * For every class included in the index, examines those classes and all parent looking for "DBText" database
+     * fields (Varchar, Text, HTMLText, etc) and adds them all as fulltext searchable fields.
+     *
+     * Note, there is no check on boosting etc. That needs to be done manually.
+     *
+     * @param string $dbType
+     * @throws ReflectionException
+     */
+    protected function addAllFieldsByType($dbType = DBString::class): void
+    {
+        $this->usedAllFields = true;
+        $classes = $this->getClasses();
+        foreach ($classes as $key => $class) {
+            $fields = DataObject::getSchema()->databaseFields($class, true);
+
+            $this->addFulltextFieldsForClass($fields, $dbType);
+        }
+    }
+
+    /**
+     * Add all fields of a given type to the index
+     *
+     * @param array $fields The fields on the DataObject
+     * @param string $dbType Class type the reflection should extend
+     * @throws ReflectionException
+     */
+    protected function addFulltextFieldsForClass(array $fields, $dbType = DBString::class): void
+    {
+        foreach ($fields as $field => $type) {
+            $pos = strpos($type, '(');
+            if ($pos !== false) {
+                $type = substr($type, 0, $pos);
+            }
+            $conf = Config::inst()->get(Injector::class, $type);
+            $ref = new ReflectionClass($conf['class']);
+            if ($ref->isSubclassOf($dbType)) {
+                $this->addFulltextField($field);
+            }
+        }
+    }
+
+    /**
+     * Add all date-type fields to the given index
+     *
+     * @throws ReflectionException
+     */
+    public function addAllDateFields()
+    {
+        $this->addAllFieldsByType(DBDate::class);
+    }
+
+    /**
+     * Add a facet field
+     *
+     * @param $field
+     * @param array $options
+     * @return $this
+     */
+    public function addFacetField($field, $options): self
+    {
+        $this->facetFields[$field] = $options;
+
+        if (!in_array($options['Field'], $this->getFilterFields(), true)) {
+            $this->addFilterField($options['Field']);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a filterable field
+     *
+     * @param $filterField
+     * @return $this
+     */
+    public function addFilterField($filterField): self
+    {
+        $key = array_search($filterField, $this->getFulltextFields(), true);
+        if ($key === false) {
+            $this->filterFields[] = $filterField;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a copy field
+     *
+     * @param string $field Name of the copyfield
+     * @param array $options Array of all fields that should be copied to this copyfield
+     * @return $this
+     */
+    public function addCopyField($field, $options): self
+    {
+        $this->copyFields[$field] = $options;
+
+        return $this;
+    }
+
+    /**
+     * Add a stored/fulltext field
+     *
+     * @param string $field
+     * @param null|string $forceType
+     * @param array $extraOptions
+     * @return SolrIndex
+     */
+    public function addStoredField($field, $forceType = null, $extraOptions = []): self
+    {
+        $options = array_merge($extraOptions, ['stored' => 'true']);
+        $this->addFulltextField($field, $forceType, $options);
+
+        return $this;
+    }
+
+    /**
+     * Get the client
+     *
+     * @return Client
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * Set/override the client
+     *
+     * @param Client $client
+     * @return $this
+     */
+    public function setClient($client): self
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * Get the stored field list
+     *
+     * @return array
+     */
+    public function getStoredFields(): array
+    {
+        return $this->storedFields;
+    }
+
+    /**
+     * Set/override the stored field list
+     *
+     * @param array $storedFields
+     * @return SolrIndex
+     */
+    public function setStoredFields(array $storedFields): self
+    {
+        $this->storedFields = $storedFields;
+
+        return $this;
     }
 }
