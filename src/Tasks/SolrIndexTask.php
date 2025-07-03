@@ -468,7 +468,7 @@ class SolrIndexTask extends BuildTask
         $this->getLogger()->error($exception->getMessage());
         $msg = sprintf(
             'Error indexing core %s on group %s,' . PHP_EOL .
-                'Please log in to the CMS to find out more about Indexing errors' . PHP_EOL,
+            'Please log in to the CMS to find out more about Indexing errors' . PHP_EOL,
             $index,
             $group
         );
