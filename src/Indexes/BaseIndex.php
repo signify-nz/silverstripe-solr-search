@@ -190,6 +190,13 @@ abstract class BaseIndex
     }
 
     /**
+     * Name of this index.
+     *
+     * @return string
+     */
+    abstract public function getIndexName();
+
+    /**
      * Required to initialise the fields.
      * It's loaded in to the non-static properties for backward compatibility with FTS
      * Also, it's a tad easier to use this way, loading the other way around would be very
