@@ -28,7 +28,7 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
  *
  * It always runs on all indexes, to make sure all indexes are up to date.
  *
- * It will clear our any existing index data before running.
+ * It will clear out any existing index data before running.
  *
  * @package Firesphere\Solr\Search
  */
@@ -55,7 +55,9 @@ class FullSolrIndexJob extends AbstractQueuedJob
     protected $indexes;
 
     /**
-     * @var BaseIndex Current core being indexed
+     * Current core being indexed
+     *
+     * @var BaseIndex
      */
     protected $index;
 
@@ -88,7 +90,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     protected $shouldClearIndex = true;
 
     /**
-     * My name
+     * Gets a title for the job that can be used in listings
      *
      * @return string
      */
@@ -97,6 +99,9 @@ class FullSolrIndexJob extends AbstractQueuedJob
         return 'Index groups to Solr search';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setup()
     {
         $this->indexes = (new SolrCoreService())->getValidIndexes();
@@ -151,6 +156,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     /**
      * Index a group of a class for a specific state and index
      *
+     * @param string $index Name of index
      * @param string $group Group to index
      * @param string $class Class to index
      * @throws Exception
@@ -244,7 +250,6 @@ class FullSolrIndexJob extends AbstractQueuedJob
      *
      * @codeCoverageIgnore This is actually tested through reflection
      * @param string $index Index that is currently running
-     * @param int $group Group currently attempted to index
      * @param Exception $exception Exception that's been thrown
      * @throws HTTPException
      * @throws ValidationException
@@ -274,7 +279,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     /**
      * Set array of data to index
      *
-     * @param array $classToIndex
+     * @param array $indexableData
      * @return FullSolrIndexJob
      */
     public function setIndexableData($indexableData)
@@ -337,7 +342,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     /**
      * Set an instance of SolrCoreService
      *
-     * @param SolrCoreService $batchLength
+     * @param SolrCoreService $service
      */
     public function setService($service): void
     {
