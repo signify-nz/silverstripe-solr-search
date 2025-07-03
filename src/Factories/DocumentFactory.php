@@ -29,6 +29,8 @@ use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBField;
 use Solarium\QueryType\Update\Query\Document;
 use Solarium\QueryType\Update\Query\Query;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataList;
 
 /**
  * Class DocumentFactory

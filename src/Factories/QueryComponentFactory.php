@@ -19,6 +19,9 @@ use Minimalcode\Search\Criteria;
 use SilverStripe\Security\Security;
 use Solarium\Core\Query\Helper;
 use Solarium\QueryType\Select\Query\Query;
+use Solarium\Component\Facet\Field;
+use SilverStripe\ORM\DataList;
+use SilverStripe\Security\Group;
 
 /**
  * Class QueryComponentFactory

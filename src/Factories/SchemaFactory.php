@@ -22,6 +22,7 @@ use SilverStripe\Core\Manifest\ModuleLoader;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
+use Firesphere\SolrSearch\Indexes\BaseIndex;
 
 /**
  * Class SchemaFactory

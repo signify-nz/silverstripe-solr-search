@@ -30,6 +30,7 @@ use Solarium\Component\Result\Spellcheck\Result as SpellcheckResult;
 use Solarium\QueryType\Select\Result\Document;
 use Solarium\QueryType\Select\Result\Result;
 use stdClass;
+use Solarium\Component\Result\Highlighting\Highlighting;
 
 /**
  * Class SearchResult is the combined result in a SilverStripe readable way

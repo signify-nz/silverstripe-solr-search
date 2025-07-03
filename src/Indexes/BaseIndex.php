@@ -43,6 +43,7 @@ use SilverStripe\View\ArrayData;
 use Solarium\Exception\HttpException;
 use Solarium\QueryType\Select\Query\Query;
 use Solarium\QueryType\Select\Result\Result;
+use Solarium\Core\Client\Client;
 
 /**
  * Base for creating a new Solr core.

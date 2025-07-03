@@ -14,6 +14,7 @@ namespace Firesphere\SolrSearch\Queries;
 
 use Firesphere\SolrSearch\Traits\GetterSetterTrait;
 use SilverStripe\Core\Injector\Injectable;
+use Minimalcode\Search\Criteria;
 
 /**
  * Class BaseQuery is the base of every query executed.
