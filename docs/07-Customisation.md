@@ -114,3 +114,25 @@ class ExampleItem extends BaseElement
     }
 }
 ```
+
+## DataObject Related Object Reindexing
+
+There are many situations in which a non-indexed DataObject may be linked to other indexed DataObjects. Here, a change in the source DataObject does not trigger a reindex in the related DataObjects, resulting in outof date indexed content. One common example of this is Taxonomy Terms on a Page - if Taxonomy Terms are indexable on a Page, the Page should be updated in the index when the Taxonomy Term is changed.
+
+To implement this behaviour, add the `IndexedRelationsSolrUpdate` trait to the DataObject along with a `getIndexedRelations` function that defines indexed related objects. For example:
+
+```php
+class ExampleItem extends DataObject
+{
+    use IndexedRelationsSolrUpdate;
+
+    public function IndexedRelations()
+    {
+        $objectID = $this->ID;
+
+        $relatedObjects = Page::get()->filter('<object-name>.ID', $objectID);
+
+        return $relatedObjects;
+    }
+}
+```
