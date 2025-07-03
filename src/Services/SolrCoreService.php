@@ -499,6 +499,29 @@ class SolrCoreService
     }
 
     /**
+     * Get the admin
+     *
+     * @return CoreAdminQuery
+     */
+    public function getAdmin(): CoreAdminQuery
+    {
+        return $this->admin;
+    }
+
+    /**
+     * Set the admin
+     *
+     * @param CoreAdminQuery $admin
+     * @return self
+     */
+    public function setAdmin($admin): self
+    {
+        $this->admin = $admin;
+
+        return $this;
+    }
+
+    /**
      * Get the client
      *
      * @return Client
