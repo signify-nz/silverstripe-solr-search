@@ -7,7 +7,7 @@
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
  * @author Signify Ltd <info@signify.co.nz>
- * Signify Ltd modified code in July 2025
+ * Signify Ltd modified code in Oct 2024
  */
 
 namespace Firesphere\SolrSearch\Indexes;
