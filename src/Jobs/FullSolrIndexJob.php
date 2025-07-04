@@ -66,7 +66,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      *
      * @var int
      */
-    protected $batchLength = 250;
+    protected $batchLength = 500;
 
     /**
      * The logger to use
