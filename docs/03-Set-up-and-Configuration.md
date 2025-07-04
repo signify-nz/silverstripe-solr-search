@@ -219,10 +219,16 @@ The [compatibility module](13-Submodules/01-Fulltext-Search-Compatibility.md) ha
 method that allows you to build your index and then generate the YML content for you. 
 See the compatibility module for more details.
 
-## Grouped indexing
+## Indexing
 
-Be aware that Grouped indexing is `0`-based. Thus, if there are 150 groups to index,
-the final group to index will be 149 instead of 150.
+There are two jobs that can be triggered to perform a reindex: SolrIndexJob and FullSolrIndexJob.
+The only difference between the two is that the FullSolrIndexJob will clear any data from the index before running.
+
+These jobs can be added through the queued jobs admin or through their corresponding Build Task that, when run, will
+queue an instance of the relevant job e.g. running /dev/tasks/SolrIndexTask will queue an instance of the SolrIndexJob.
+
+It is recommended to rely on cron for these tasks to run, however the job queue can be triggered
+manually with Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask.
 
 ## Method output casting
 
