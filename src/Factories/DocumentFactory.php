@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class DocumentFactory|Firesphere\SolrSearch\Factories\DocumentFactory Build a Solarium document to push
  *
@@ -18,7 +19,6 @@ use Firesphere\SolrSearch\Helpers\FieldResolver;
 use Firesphere\SolrSearch\Helpers\Statics;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Services\SolrCoreService;
-use Firesphere\SolrSearch\Traits\DocumentFactoryTrait;
 use Firesphere\SolrSearch\Traits\LoggerTrait;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
@@ -29,6 +29,8 @@ use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBField;
 use Solarium\QueryType\Update\Query\Document;
 use Solarium\QueryType\Update\Query\Query;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataList;
 
 /**
  * Class DocumentFactory
@@ -40,7 +42,6 @@ class DocumentFactory
 {
     use Configurable;
     use Extensible;
-    use DocumentFactoryTrait;
     use LoggerTrait;
 
     /**
@@ -55,6 +56,18 @@ class DocumentFactory
      * @var bool Debug this build
      */
     protected $debug = false;
+    /**
+     * @var FieldResolver Resolver for fields
+     */
+    protected $fieldResolver;
+    /**
+     * @var null|ArrayList|DataList Items to create documents for
+     */
+    protected $items;
+    /**
+     * @var string Current class that's being indexed
+     */
+    protected $class;
 
     /**
      * DocumentFactory constructor, sets up the field resolver
@@ -278,6 +291,62 @@ class DocumentFactory
     public function setDebug(bool $debug): DocumentFactory
     {
         $this->debug = $debug;
+
+        return $this;
+    }
+
+    /**
+     * Current class being indexed
+     *
+     * @return string
+     */
+    public function getClass(): string
+    {
+        return $this->class;
+    }
+
+    /**
+     * Set the current class to be indexed
+     *
+     * @param string $class
+     * @return DocumentFactory
+     */
+    public function setClass(string $class): self
+    {
+        $this->class = $class;
+
+        return $this;
+    }
+
+    /**
+     * Get the FieldResolver class
+     *
+     * @return FieldResolver
+     */
+    public function getFieldResolver(): FieldResolver
+    {
+        return $this->fieldResolver;
+    }
+
+    /**
+     * Get the items being indexed
+     *
+     * @return ArrayList|DataList|null
+     */
+    public function getItems()
+    {
+        return $this->items;
+    }
+
+    /**
+     * Set the items to index
+     *
+     * @param ArrayList|DataList|null $items
+     * @return DocumentFactory
+     */
+    public function setItems($items): self
+    {
+        $this->items = $items;
 
         return $this;
     }
