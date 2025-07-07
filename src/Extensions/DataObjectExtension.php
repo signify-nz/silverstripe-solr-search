@@ -419,7 +419,7 @@ class DataObjectExtension extends DataExtension
                 $item = DataObject::get_by_id($item::class, $item->ID);
             }
 
-            if ($item && $item->exists()) {
+            if ($item && $item->exists() && $this->shouldPush()) {
                 $this->pushToSolr($item);
             }
         }
