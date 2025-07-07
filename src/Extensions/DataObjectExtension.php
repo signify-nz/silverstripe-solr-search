@@ -32,6 +32,7 @@ use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Versioned\Versioned;
 use Solarium\Exception\HttpException;
 use Firesphere\SolrSearch\Traits\IndexedParentSolrUpdate;
+use SilverStripe\ORM\DataList;
 
 /**
  * Class \Firesphere\SolrSearch\Compat\DataObjectExtension
@@ -395,5 +396,34 @@ class DataObjectExtension extends DataExtension
 
             $this->doReindex();
         }
+    }
+
+    /**
+     * Reindex given indexed objects related to a changed source object.
+     *
+     * @param DataList|array $relations
+     * @return void
+     */
+    public function doRelationsReindex(DataList|array $relations)
+    {
+        $objHasIndexedRelations = $this->owner->hasMethod('getIndexedRelations');
+
+        if (!$objHasIndexedRelations) {
+            return;
+        }
+
+        foreach ($relations as $item) {
+            if ($item->hasExtension(Versioned::class)) {
+                $item = Versioned::get_by_stage($item::class, Versioned::LIVE)->byID($item->ID);
+            } else {
+                $item = DataObject::get_by_id($item::class, $item->ID);
+            }
+
+            if ($item && $item->exists() && $this->shouldPush()) {
+                $this->pushToSolr($item);
+            }
+        }
+
+        $this->doReindex();
     }
 }
