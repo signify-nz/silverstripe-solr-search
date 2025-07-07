@@ -16,7 +16,7 @@ namespace Firesphere\SolrSearch\Jobs;
  *
  * It always runs on all indexes, to make sure all indexes are up to date.
  *
- * It will not clear our any existing index data before running.
+ * It will not clear out any existing index data before running.
  *
  * @package Firesphere\Solr\Search
  */

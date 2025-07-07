@@ -11,12 +11,11 @@ namespace Firesphere\SolrSearch\Jobs;
 
 use Firesphere\SolrSearch\Tasks\SolrConfigureTask;
 use Psr\SimpleCache\InvalidArgumentException;
-use ReflectionException;
 use SilverStripe\Control\NullHTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ValidationException;
-use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Solarium\Exception\HttpException;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
 /**
  * Class SolrConfigureJob
@@ -46,7 +45,7 @@ class SolrConfigureJob extends AbstractQueuedJob
      * @throws ValidationException
      * @throws InvalidArgumentException
      */
-    public function process()
+    public function process(): void
     {
         /** @var SolrConfigureTask $task */
         $task = Injector::inst()->get(SolrConfigureTask::class);

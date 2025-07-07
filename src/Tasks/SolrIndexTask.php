@@ -15,6 +15,7 @@ use Firesphere\SolrSearch\Jobs\SolrIndexJob;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\Dev\TaskRunner;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**

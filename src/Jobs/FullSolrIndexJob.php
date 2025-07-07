@@ -1,6 +1,6 @@
 <?php
 /**
- * Class FullSolrIndexJob|Firesphere\SolrSearch\Jobs\SolrIndexTask Index Solr cores
+ * Class FullSolrIndexJob|Firesphere\SolrSearch\Jobs\FullSolrIndexJob Index Solr cores
  *
  * @package Firesphere\Solr\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
@@ -19,7 +19,9 @@ use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\SS_List;
 use Solarium\Exception\HttpException;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
@@ -160,6 +162,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      * @param string $group Group to index
      * @param string $class Class to index
      * @throws Exception
+     * @return void
      */
     private function indexStateClass(string $index, string $class, string $group): void
     {
@@ -182,6 +185,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      *
      * @param SS_List $items Items to index
      * @throws Exception
+     * @return void
      */
     protected function updateIndex($items): void
     {
@@ -203,7 +207,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      *
      * @return void
      */
-    protected function configureIndexableData()
+    protected function configureIndexableData(): void
     {
         $steps = 0;
         $indexes = $this->indexes;
@@ -253,6 +257,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      * @param Exception $exception Exception that's been thrown
      * @throws HTTPException
      * @throws ValidationException
+     * @return void
      */
     private function logException($index, Exception $exception): void
     {
@@ -323,6 +328,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      * Set the length of a single batch
      *
      * @param int $batchLength
+     * @return void
      */
     public function setBatchLength(int $batchLength): void
     {
@@ -343,6 +349,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      * Set an instance of SolrCoreService
      *
      * @param SolrCoreService $service
+     * @return void
      */
     public function setService($service): void
     {
@@ -367,6 +374,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      * Set the logger if needed
      *
      * @param LoggerInterface $logger
+     * @return void
      */
     public function setLogger($logger): void
     {
@@ -387,6 +395,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      * Set an instance of the current index class
      *
      * @param BaseIndex $index
+     * @return void
      */
     public function setIndex(BaseIndex $index): void
     {
