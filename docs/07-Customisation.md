@@ -126,7 +126,7 @@ class ExampleItem extends DataObject
 {
     use IndexedRelationsSolrUpdate;
 
-    public function IndexedRelations()
+    public function getIndexedRelations()
     {
         $objectID = $this->ID;
 
