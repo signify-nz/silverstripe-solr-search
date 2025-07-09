@@ -28,6 +28,10 @@ trait IndexedRelationsSolrUpdate
      */
     public function onAfterWrite(): void
     {
+        if (!$this instanceof Extension)
+        {
+            parent::onAfterWrite();
+        };
         /** @var DataObject $sourceObject */
         $sourceObject = $this instanceof Extension ? $this->owner : $this;
         $relatedObjects = $this->getIndexedRelations() ?? null;
@@ -44,6 +48,10 @@ trait IndexedRelationsSolrUpdate
      */
     public function onBeforeDelete(): void
     {
+        if (!$this instanceof Extension)
+        {
+            parent::onBeforeDelete();
+        };
         $relatedObjects = $this->getIndexedRelations();
         $this->relations = $relatedObjects->toArray();
     }
@@ -55,6 +63,10 @@ trait IndexedRelationsSolrUpdate
      */
     public function onAfterDelete(): void
     {
+        if (!$this instanceof Extension)
+        {
+            parent::onAfterDelete();
+        };
         /** @var DataObject $sourceObject */
         $sourceObject = $this instanceof Extension ? $this->owner : $this;
         $relatedObjects = $this->relations ?? null;
