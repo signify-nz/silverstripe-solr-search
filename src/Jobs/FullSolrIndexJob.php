@@ -98,7 +98,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     public function getTitle()
     {
-        return 'Index groups to Solr search';
+        return 'Clear and rebuild Solr index';
     }
 
     /**

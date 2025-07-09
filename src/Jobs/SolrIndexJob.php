@@ -28,4 +28,14 @@ class SolrIndexJob extends FullSolrIndexJob
      * @var bool
      */
     protected $shouldClearIndex = false;
+
+    /**
+     * Gets a title for the job that can be used in listings
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return 'Rebuild Solr index';
+    }
 }
