@@ -20,7 +20,7 @@ trait IndexedParentSolrUpdate
      *
      * @return void
      */
-    public function onAfterWrite()
+    public function onAfterWrite(): void
     {
         $object = $this instanceof Extension ? $this->owner : $this;
         if (!$object->hasExtension(Versioned::class) && $parent = $this->getIndexedParent()) {
@@ -33,7 +33,7 @@ trait IndexedParentSolrUpdate
      *
      * @return void
      */
-    public function onAfterPublish()
+    public function onAfterPublish(): void
     {
         if ($parent = $this->getIndexedParent()) {
             $object = $this instanceof Extension ? $this->owner : $this;
@@ -46,7 +46,7 @@ trait IndexedParentSolrUpdate
      *
      * @return void
      */
-    public function onAfterDelete()
+    public function onAfterDelete(): void
     {
         if ($parent = $this->getIndexedParent()) {
             $object = $this instanceof Extension ? $this->owner : $this;
