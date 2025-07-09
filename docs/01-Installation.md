@@ -33,6 +33,6 @@ class MyIndex extends BaseIndex
 }
 ```
 - Run `vendor/bin/sake dev/tasks/SolrConfigureTask` to configure the core
-- Run `vendor/bin/sake dev/tasks/SolrIndexTask` to add documents to your index
+- Run `vendor/bin/sake dev/tasks/SolrIndexTask` to queue the job to add documents to your index
 
 Once these tasks have completed - happy searching!
