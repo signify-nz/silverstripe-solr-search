@@ -385,10 +385,10 @@
 <fieldType name="point" class="solr.PointType" dimension="2" subFieldSuffix="_d"/>
 
 <!-- A specialized field for geospatial search. If indexed, this fieldType must not be multivalued. -->
-<fieldType name="location" class="solr.LatLonPointSpatialField"/>
+<fieldType name="location" class="solr.LatLonType" subFieldSuffix="_coordinate"/>
 
 <!--
  A Geohash is a compact representation of a latitude longitude pair in a single field.
  See http://wiki.apache.org/solr/SpatialSearch
 -->
-<fieldtype name="geohash" class="solr.LatLonPointSpatialField"/>
+<fieldtype name="geohash" class="solr.GeoHashField"/>
