@@ -1257,7 +1257,7 @@
 
         <!-- a spellchecker built from a field of the main index -->
         <lst name="spellchecker">
-            <str name="name">default</str>
+            <str name="name">_spellcheck</str>
             <str name="field">_text</str>
             <str name="classname">solr.DirectSolrSpellChecker</str>
             <!-- the spellcheck distance measure used, the default is the internal levenshtein -->
@@ -1281,7 +1281,7 @@
 
         <!-- Custom spellcheck dictionary limited to an optional _spellcheckText field -->
         <lst name="spellchecker">
-            <str name="name">_spellcheck</str>
+            <str name="name">default</str>
             <str name="field">_spellcheckText</str>
             <str name="classname">solr.DirectSolrSpellChecker</str>
             <!-- the spellcheck distance measure used, the default is the internal levenshtein -->

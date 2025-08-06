@@ -161,10 +161,21 @@ Available methods are:
 | addFilterField | Add fields to use for filtering | No | `$this->addFilterField('ID');` |
 | addBoostedField | Fields to boost by on Query time | No | `$this->addBoostedField('Title', ([]/2), 2);`<sup>2</sup> |
 | addSortField | Field to sort by | No | `$this->addSortField('Created');` |
-| addCopyField | Add a special copy field, besides the default _text | No | `$this->addCopyField('myCopy', ['Fields', 'To', 'Copy']);` |
+| addCopyField | Add a special copy field, besides the default _text | No | `$this->addCopyField('myCopy', ['Fields', 'To', 'Copy']);` <br />See [below](#changing-the-copy-field-type) to change the field type |
 | addStoredField | Add a field to be stored specifically | No | `$this->addStoredField('LastEdited');` |
 | addFacetField | Field to build faceting on | No | `$this->addFacetField(SiteTree::class, ['BaseClass' => SiteTree::class, 'Title' => 'FacetObject', 'Field' => 'FacetObjectID']);` |
- 
+
+#### Changing the copy field type
+
+A copy field type will default to using stemfield (htmltext if using Solr 4) if not set. To change the field type for a CopyField, the `'type'` can be set as an `$option` in `addCopyField` like so:
+
+```php
+$this->addCopyField('myCopy', ['Fields', 'To', 'Copy', 'type' => 'FieldType']);
+```
+Example:
+```php
+$this->addCopyField('myCopy', ['Title', 'Content', 'type' => 'text']);
+```
 
 ### Using YML
 

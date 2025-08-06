@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class BaseIndex|Firesphere\SolrSearch\Indexes\BaseIndex is the base for indexing items
  *
@@ -101,6 +102,10 @@ abstract class BaseIndex
      * @var bool Signify if a retry should occur if nothing was found and there are suggestions to follow
      */
     private $retry = false;
+    /**
+     * @var bool Include dedicated spellcheck field to remove stemming
+     */
+    private static $include_dedicated_spellcheck_field = true;
 
     /**
      * BaseIndex constructor.

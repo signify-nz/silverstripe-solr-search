@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Trait BaseIndexTrait|Firesphere\SolrSearch\Traits\BaseIndexTrait Used to extract methods from the
  * {@link \Firesphere\SolrSearch\Indexes\BaseIndex} to make the code more readable
@@ -7,7 +8,6 @@
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
  */
-
 
 namespace Firesphere\SolrSearch\Traits;
 
@@ -21,7 +21,6 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\ORM\FieldType\DBString;
 use Solarium\Core\Client\Client;
-
 
 /**
  * This is slightly cheating, but it works and also makes things more readable.
@@ -83,6 +82,8 @@ trait BaseIndexTrait
      */
     public function getCopyFields(): array
     {
+        $this->setSpellcheckField();
+
         return $this->copyFields;
     }
 
@@ -96,7 +97,28 @@ trait BaseIndexTrait
     {
         $this->copyFields = $copyField;
 
+        $this->setSpellcheckField();
+
         return $this;
+    }
+
+    /**
+     * Set the default copy field to use spellcheck with no stemming unless
+     * set to false in config.
+     *
+     * @return void
+     */
+    public function setSpellcheckField()
+    {
+        $fields = $this->copyFields;
+
+        $spellcheckNoStemming = $this->config()->get('include_dedicated_spellcheck_field');
+
+        $spellcheckFieldExists = array_key_exists('_spellcheckText', $fields);
+
+        if (!$spellcheckFieldExists && $spellcheckNoStemming == true) {
+            $this->addCopyField('_spellcheckText', ['*', 'type' => 'textSpell']);
+        }
     }
 
     /**
@@ -130,7 +152,8 @@ trait BaseIndexTrait
      */
     public function addSortField($sortField): self
     {
-        if (!in_array($sortField, $this->getFulltextFields(), true) &&
+        if (
+            !in_array($sortField, $this->getFulltextFields(), true) &&
             !in_array($sortField, $this->getFilterFields(), true)
         ) {
             $this->addFulltextField($sortField);

@@ -29,3 +29,7 @@ Firesphere\SolrSearch\Indexes\BaseIndex:
 ```
 
 This will index Elements with their Title and rendered content.
+
+## Element Parent Reindexing
+
+Often with Elements, the Element itself is not indexed but the content within the Element is included in its parent Page content. Therefore, when changes are made to the Element, it should trigger a reindex on the parent. Information for implementing this behaviour can be found in [Customisation](../07-Customisation.md#dataobject-parent-reindexing).
