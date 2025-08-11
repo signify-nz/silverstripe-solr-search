@@ -30,3 +30,7 @@ Solr9 is supported
 `composer require signify-nz/silverstripe-solr-search`
 
 More details can be found in the [docs](docs/01-Installation.md).
+
+# Security Policy
+
+See our [security policy](./SECURITY.md)

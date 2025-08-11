@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class SchemaFactory|Firesphere\SolrSearch\Services\SchemaFactory Base service for generating a schema
  *
@@ -15,13 +16,13 @@ use Exception;
 use Firesphere\SolrSearch\Helpers\FieldResolver;
 use Firesphere\SolrSearch\Helpers\Statics;
 use Firesphere\SolrSearch\Services\SolrCoreService;
-use Firesphere\SolrSearch\Traits\GetSetSchemaFactoryTrait;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Manifest\ModuleLoader;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
+use Firesphere\SolrSearch\Indexes\BaseIndex;
 
 /**
  * Class SchemaFactory
@@ -30,8 +31,6 @@ use SilverStripe\View\ViewableData;
  */
 class SchemaFactory extends ViewableData
 {
-    use GetSetSchemaFactoryTrait;
-
     /**
      * @var array Fields that always need to be stored, by Index name
      */
@@ -48,6 +47,30 @@ class SchemaFactory extends ViewableData
      * @var array Base paths to the template
      */
     protected $baseTemplatePath;
+    /**
+     * ABSOLUTE Path to template
+     *
+     * @var string
+     */
+    protected $template;
+    /**
+     * Store the value in Solr
+     *
+     * @var bool
+     */
+    protected $store = false;
+    /**
+     * Index to generate the schema for
+     *
+     * @var BaseIndex
+     */
+    protected $index;
+    /**
+     * ABSOLUTE Path to types.ss template
+     *
+     * @var string
+     */
+    protected $typesTemplate;
 
     /**
      * SchemaFactory constructor.
@@ -155,9 +178,11 @@ class SchemaFactory extends ViewableData
         $fields = $this->index->getCopyFields();
 
         $return = ArrayList::create();
+        $defaultType = SolrCoreService::singleton()->getSolrVersion() === 4 ? 'htmltext' : 'stemfield';
         foreach ($fields as $field => $copyFields) {
             $item = [
                 'Field' => $field,
+                'Type' => (array_key_exists('type', $copyFields) ? $copyFields['type'] : $defaultType)
             ];
 
             $return->push($item);
@@ -184,6 +209,8 @@ class SchemaFactory extends ViewableData
             // Allow all fields to be in a copyfield via a shorthand
             if ($fields[0] === '*') {
                 $fields = $this->index->getFulltextFields();
+            } else {
+                unset($fields['type']);
             }
 
             foreach ($fields as $copyField) {
@@ -312,5 +339,126 @@ class SchemaFactory extends ViewableData
     public function getExtrasPath()
     {
         return $this->getTemplatePathFor('extras');
+    }
+    /**
+     * Set the store value
+     *
+     * @param bool $store
+     */
+    public function setStore(bool $store): void
+    {
+        $this->store = $store;
+    }
+
+    /**
+     * Get the Index that's being used
+     *
+     * @return BaseIndex
+     */
+    public function getIndex()
+    {
+        return $this->index;
+    }
+
+    /**
+     * Set the index that's being used and add the introspection for it
+     *
+     * @param BaseIndex $index
+     * @return SchemaFactory
+     */
+    public function setIndex($index): self
+    {
+        $this->index = $index;
+        // Add the index to the introspection as well, there's no need for a separate call here
+        // We're loading this core, why would we want the introspection from a different index?
+        $this->fieldResolver->setIndex($index);
+
+        return $this;
+    }
+
+    /**
+     * Get the name of the index being used
+     *
+     * @return string
+     */
+    public function getIndexName(): string
+    {
+        return $this->index->getIndexName();
+    }
+
+    /**
+     * Get the default field to generate df components for
+     *
+     * @return string|array
+     */
+    public function getDefaultField()
+    {
+        return $this->index->getDefaultField();
+    }
+
+    /**
+     * Get the Identifier Field for Solr
+     *
+     * @return string
+     */
+    public function getIDField(): string
+    {
+        return SolrCoreService::ID_FIELD;
+    }
+
+    /**
+     * Get the Identifier Field for Solr
+     *
+     * @return string
+     */
+    public function getClassID(): string
+    {
+        return SolrCoreService::CLASS_ID_FIELD;
+    }
+
+    /**
+     * Get the types template if defined
+     *
+     * @return string
+     */
+    public function getTypesTemplate()
+    {
+        return $this->typesTemplate;
+    }
+
+    /**
+     * Set custom types template
+     *
+     * @param string $typesTemplate
+     * @return SchemaFactory
+     */
+    public function setTypesTemplate($typesTemplate): self
+    {
+        $this->typesTemplate = $typesTemplate;
+
+        return $this;
+    }
+
+    /**
+     * Get the base template for the schema xml
+     *
+     * @return string
+     */
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
+    /**
+     * Set a custom template for schema xml
+     *
+     * @param string $template
+     * @return SchemaFactory
+     */
+    public function setTemplate($template): self
+    {
+        $this->template = $template;
+
+        return $this;
     }
 }

@@ -96,3 +96,43 @@ This includes the `extras` folder in its entirety.
 
 It is easiest to copy the entire `Solr` folder to your own application and alter what you need in there, leaving
 everything else untouched. This will ensure that everything is in place.
+
+## DataObject Parent Reindexing
+
+There are many situations in which an indexed DataObject may be linked to other DataObjects that shouldn't be indexed on their own, but do impact the indexed content of the parent. A very common example of this is Elemental Blocks on a Page - the indexed content of the Page contains the content of the Blocks, and therefore the Page should be updated in the index when the Block is changed.
+
+To implement this behaviour, add the `IndexedParentSolrUpdate` trait to the DataObject along with a `getIndexedParent` function that defines indexed parent. For example:
+
+```php
+class ExampleItem extends BaseElement
+{
+    use IndexedParentSolrUpdate;
+
+    public function getIndexedParent()
+    {
+        return $this->owner->getPage();
+    }
+}
+```
+
+## DataObject Related Object Reindexing
+
+There are many situations in which a non-indexed DataObject may be linked to other indexed DataObjects. Here, a change in the source DataObject does not trigger a reindex in the related DataObjects, resulting in outof date indexed content. One common example of this is Taxonomy Terms on a Page - if Taxonomy Terms are indexable on a Page, the Page should be updated in the index when the Taxonomy Term is changed.
+
+To implement this behaviour, add the `IndexedRelationsSolrUpdate` trait to the DataObject along with a `getIndexedRelations` function that defines indexed related objects. For example:
+
+```php
+class ExampleItem extends DataObject
+{
+    use IndexedRelationsSolrUpdate;
+
+    public function getIndexedRelations()
+    {
+        $objectID = $this->ID;
+
+        $relatedObjects = Page::get()->filter('<object-name>.ID', $objectID);
+
+        return $relatedObjects;
+    }
+}
+```

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class DataObjectExtension|Firesphere\SolrSearch\Extensions\DataObjectExtension Adds checking if changes should be
  * pushed to Solr
@@ -30,6 +31,8 @@ use SilverStripe\Security\InheritedPermissionsExtension;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Versioned\Versioned;
 use Solarium\Exception\HttpException;
+use Firesphere\SolrSearch\Traits\IndexedParentSolrUpdate;
+use SilverStripe\ORM\DataList;
 
 /**
  * Class \Firesphere\SolrSearch\Compat\DataObjectExtension
@@ -366,5 +369,61 @@ class DataObjectExtension extends DataExtension
     public function getSubsiteID()
     {
         return $this->owner->getField('SubsiteID');
+    }
+
+    /**
+     * Recursive reindex for parent objects that are indexed or have indexed parents
+     *
+     * @param DataObject $parent
+     * @return void
+     */
+    public function doParentReindex($parent)
+    {
+        $parentHasIndexedParent = $parent->hasMethod('getIndexedParent');
+        $objHasIndexedParent = $this->owner->hasMethod('getIndexedParent');
+
+        if (!$objHasIndexedParent) {
+            return;
+        } else if ($parent) {
+            $service = Injector::inst()->get(SolrCoreService::class);
+
+            if ($this->shouldPush() && $service->isValidClass($parent->ClassName)) {
+                $publishedParent = Versioned::get_by_stage($parent::class, Versioned::LIVE)->byID($parent->ID);
+                $this->pushToSolr($publishedParent);
+            } else if ($parentHasIndexedParent && $parent->isPublished()) {
+                $this->doParentReindex($parent->getIndexedParent());
+            }
+
+            $this->doReindex();
+        }
+    }
+
+    /**
+     * Reindex given indexed objects related to a changed source object.
+     *
+     * @param DataList|array $relations
+     * @return void
+     */
+    public function doRelationsReindex(DataList|array $relations)
+    {
+        $objHasIndexedRelations = $this->owner->hasMethod('getIndexedRelations');
+
+        if (!$objHasIndexedRelations) {
+            return;
+        }
+
+        foreach ($relations as $item) {
+            if ($item->hasExtension(Versioned::class)) {
+                $item = Versioned::get_by_stage($item::class, Versioned::LIVE)->byID($item->ID);
+            } else {
+                $item = DataObject::get_by_id($item::class, $item->ID);
+            }
+
+            if ($item && $item->exists() && $this->shouldPush()) {
+                $this->pushToSolr($item);
+            }
+        }
+
+        $this->doReindex();
     }
 }

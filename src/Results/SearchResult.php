@@ -1,10 +1,13 @@
 <?php
+
 /**
  * class SearchResult|Firesphere\SolrSearch\Results\SearchResult Result of a query
  *
  * @package Firesphere\Solr\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ * @author Signify Ltd <info@signify.co.nz>
+ * Signify Ltd modified code in July 2025
  */
 
 namespace Firesphere\SolrSearch\Results;
@@ -12,8 +15,6 @@ namespace Firesphere\SolrSearch\Results;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Queries\BaseQuery;
 use Firesphere\SolrSearch\Services\SolrCoreService;
-use Firesphere\SolrSearch\Traits\SearchResultGetTrait;
-use Firesphere\SolrSearch\Traits\SearchResultSetTrait;
 use SilverStripe\Control\Controller;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
@@ -29,6 +30,7 @@ use Solarium\Component\Result\Spellcheck\Result as SpellcheckResult;
 use Solarium\QueryType\Select\Result\Document;
 use Solarium\QueryType\Select\Result\Result;
 use stdClass;
+use Solarium\Component\Result\Highlighting\Highlighting;
 
 /**
  * Class SearchResult is the combined result in a SilverStripe readable way
@@ -40,9 +42,6 @@ use stdClass;
  */
 class SearchResult extends ViewableData
 {
-    use SearchResultGetTrait;
-    use SearchResultSetTrait;
-
     /**
      * @var BaseQuery Query that has been executed
      */
@@ -55,6 +54,30 @@ class SearchResult extends ViewableData
      * @var stdClass|ArrayList|DataList|DataObject Resulting matches from the query on the index
      */
     protected $matches;
+    /**
+     * @var int Total items in the result
+     */
+    protected $totalItems;
+
+    /**
+     * @var ArrayData Facet results
+     */
+    protected $facets;
+
+    /**
+     * @var Highlighting Highlighting
+     */
+    protected $highlight;
+
+    /**
+     * @var ArrayList Spellcheck results
+     */
+    protected $spellcheck;
+
+    /**
+     * @var string Collated spellcheck
+     */
+    protected $collatedSpellcheck;
 
     /**
      * SearchResult constructor.
@@ -279,10 +302,9 @@ class SearchResult extends ViewableData
             /** @var DataObject $match */
 
             //check against obsolete records
-            if(class_exists($class)) {
+            if (class_exists($class)) {
                 $match = $class::get()->byID($match->{$classIDField});
             }
-
         }
 
         return ($match && $match->exists()) ? $match : false;
@@ -337,5 +359,81 @@ class SearchResult extends ViewableData
         $this->matches = $matches;
 
         return $matches;
+    }
+
+    /**
+     * Retrieve the facets from the results
+     *
+     * @return ArrayData
+     */
+    public function getFacets(): ArrayData
+    {
+        return $this->facets;
+    }
+
+    /**
+     * Get the collated spellcheck
+     *
+     * @return string
+     */
+    public function getCollatedSpellcheck()
+    {
+        return $this->collatedSpellcheck;
+    }
+
+    /**
+     * Get the highlighting
+     *
+     * @return Highlighting|null
+     */
+    public function getHighlight()
+    {
+        return $this->highlight;
+    }
+
+    /**
+     * Get the spellchecked results
+     *
+     * @return ArrayList
+     */
+    public function getSpellcheck(): ArrayList
+    {
+        return $this->spellcheck;
+    }
+
+    /**
+     * Total items in the result
+     *
+     * @return int
+     */
+    public function getTotalItems(): int
+    {
+        return $this->totalItems;
+    }
+
+    /**
+     * Set the highlighted items
+     *
+     * @param $highlight
+     * @return SearchResult
+     */
+    public function setHighlight($highlight): self
+    {
+        $this->highlight = $highlight;
+
+        return $this;
+    }
+
+    /**
+     * Set the total amount of results
+     *
+     * @param $count
+     * @return self
+     */
+    public function setTotalItems($count): self
+    {
+        $this->totalItems = $count;
+
+        return $this;
     }
 }

@@ -157,6 +157,7 @@
         <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
         <filter class="solr.SnowballPorterFilterFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
@@ -165,6 +166,7 @@
         <tokenizer class="solr.ClassicTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ASCIIFoldingFilterFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
         <filter class="solr.SnowballPorterFilterFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
     </analyzer>
@@ -232,7 +234,6 @@
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
         <filter class="solr.LengthFilterFactory" min="4" max="20"/>
         <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-        <filter class="solr.SnowballPorterFilterFactory"/>
     </analyzer>
 </fieldType>
 
@@ -246,7 +247,6 @@
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
         <filter class="solr.LengthFilterFactory" min="4" max="20"/>
         <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-        <filter class="solr.SnowballPorterFilterFactory"/>
     </analyzer>
 </fieldType>
 

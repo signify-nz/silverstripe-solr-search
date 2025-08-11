@@ -161,10 +161,21 @@ Available methods are:
 | addFilterField | Add fields to use for filtering | No | `$this->addFilterField('ID');` |
 | addBoostedField | Fields to boost by on Query time | No | `$this->addBoostedField('Title', ([]/2), 2);`<sup>2</sup> |
 | addSortField | Field to sort by | No | `$this->addSortField('Created');` |
-| addCopyField | Add a special copy field, besides the default _text | No | `$this->addCopyField('myCopy', ['Fields', 'To', 'Copy']);` |
+| addCopyField | Add a special copy field, besides the default _text | No | `$this->addCopyField('myCopy', ['Fields', 'To', 'Copy']);` <br />See [below](#changing-the-copy-field-type) to change the field type |
 | addStoredField | Add a field to be stored specifically | No | `$this->addStoredField('LastEdited');` |
 | addFacetField | Field to build faceting on | No | `$this->addFacetField(SiteTree::class, ['BaseClass' => SiteTree::class, 'Title' => 'FacetObject', 'Field' => 'FacetObjectID']);` |
- 
+
+#### Changing the copy field type
+
+A copy field type will default to using stemfield (htmltext if using Solr 4) if not set. To change the field type for a CopyField, the `'type'` can be set as an `$option` in `addCopyField` like so:
+
+```php
+$this->addCopyField('myCopy', ['Fields', 'To', 'Copy', 'type' => 'FieldType']);
+```
+Example:
+```php
+$this->addCopyField('myCopy', ['Title', 'Content', 'type' => 'text']);
+```
 
 ### Using YML
 
@@ -208,10 +219,16 @@ The [compatibility module](13-Submodules/01-Fulltext-Search-Compatibility.md) ha
 method that allows you to build your index and then generate the YML content for you. 
 See the compatibility module for more details.
 
-## Grouped indexing
+## Indexing
 
-Be aware that Grouped indexing is `0`-based. Thus, if there are 150 groups to index,
-the final group to index will be 149 instead of 150.
+There are two jobs that can be triggered to perform a reindex: SolrIndexJob and FullSolrIndexJob.
+The only difference between the two is that the FullSolrIndexJob will clear any data from the index before running.
+
+These jobs can be added through the queued jobs admin or through their corresponding Build Task that, when run, will
+queue an instance of the relevant job e.g. running /dev/tasks/SolrIndexTask will queue an instance of the SolrIndexJob.
+
+It is recommended to rely on cron for these tasks to run, however the job queue can be triggered
+manually with Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask.
 
 ## Method output casting
 

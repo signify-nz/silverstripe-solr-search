@@ -6,6 +6,8 @@ The table below shows versions that are currently being supported with security 
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 4.x     | ✓                  |
+| 3.x     | ✓                  |
 | 2.x     | ✓                  |
 | 1.x     | X                  |
 

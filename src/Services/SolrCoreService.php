@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class SolrCoreService|Firesphere\SolrSearch\Services\SolrCoreService Base service for communicating with the core
  *
@@ -14,14 +15,14 @@ namespace Firesphere\SolrSearch\Services;
 use Exception;
 use Firesphere\SolrSearch\Factories\DocumentFactory;
 use Firesphere\SolrSearch\Helpers\FieldResolver;
+use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
-use Firesphere\SolrSearch\Traits\CoreAdminTrait;
-use Firesphere\SolrSearch\Traits\CoreServiceTrait;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
 use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use LogicException;
+use Psr\SimpleCache\CacheInterface;
 use ReflectionClass;
 use ReflectionException;
 use SilverStripe\Core\ClassInfo;
@@ -37,6 +38,7 @@ use Solarium\Core\Client\Client as CoreClient;
 use Solarium\QueryType\Update\Query\Query;
 use Solarium\QueryType\Update\Result;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Solarium\QueryType\Server\CoreAdmin\Query\Query as CoreAdminQuery;
 
 /**
  * Class SolrCoreService provides the base connection to Solr.
@@ -50,8 +52,6 @@ class SolrCoreService
 {
     use Injectable;
     use Configurable;
-    use CoreServiceTrait;
-    use CoreAdminTrait;
 
     /**
      * Unique ID in Solr
@@ -111,6 +111,21 @@ class SolrCoreService
     private static $add_docs_commitWithin;
 
     /**
+     * @var CoreAdminQuery A core admin object
+     */
+    protected $admin;
+    /**
+     * @var Client The current client
+     */
+    protected $client;
+    /**
+     * Add debugging information
+     *
+     * @var bool
+     */
+    protected $debug = false;
+
+    /**
      * SolrCoreService constructor.
      *
      * @throws ReflectionException
@@ -142,7 +157,8 @@ class SolrCoreService
         foreach ($this->baseIndexes as $subindex) {
             // If the config of indexes is set, and the requested index isn't in it, skip addition
             // Or, the index simply doesn't exist, also a valid option
-            if (!in_array($subindex, $enabledIndexes, true) ||
+            if (
+                !in_array($subindex, $enabledIndexes, true) ||
                 !$this->checkReflection($subindex)
             ) {
                 continue;
@@ -324,10 +340,9 @@ class SolrCoreService
      *       1 means "result version is higher"
      *       0 means "result version is equal"
      *      -1 means "result version is lower"
-     * We want to use the version "higher or equal to", because the
-     * configs are for version X-and-up.
-     * We loop through the versions available from high to low
-     * therefore, if the version is lower, we want to check the next config version
+     * We want to use the version "equal to or less than",
+     * because there are non-backwards compatible changes in Solr version 9.
+     * We loop through the versions available from high to low.
      *
      * If no valid version is found, throw an error
      *
@@ -354,11 +369,22 @@ class SolrCoreService
         $result = $client->get('solr/admin/info/system?wt=json', $clientOptions);
         $result = json_decode($result->getBody(), 1);
 
+        $lastKey = array_key_last(static::$solr_versions);
+        $lastVersion = static::$solr_versions[$lastKey];
+
         foreach (static::$solr_versions as $version) {
-            $compare = version_compare($version, $result['lucene']['solr-spec-version']);
-            if ($compare !== -1) {
+            $serverVersion = $result['lucene']['solr-spec-version'];
+            $compare = version_compare($version, $serverVersion);
+            if (
+                (int)$version === (int)$serverVersion ||
+                $compare === 0 ||
+                $compare === -1
+            ) {
                 list($v) = explode('.', $version);
                 return (int)$v;
+            }
+            if ($version === $lastVersion) {
+                return 4;
             }
         }
 
@@ -386,5 +412,226 @@ class SolrCoreService
         }
 
         return $clientOptions;
+    }
+
+    /**
+     * Create a new core
+     *
+     * @param $core string - The name of the core
+     * @param ConfigStore $configStore
+     * @return bool
+     * @throws Exception
+     * @throws HTTPException
+     */
+    public function coreCreate($core, $configStore): bool
+    {
+        $action = $this->admin->createCreate();
+
+        $action->setCore($core);
+        $path = SolrCoreService::config()->get('solr_path') ?? $configStore->instanceDir($core);
+        $action->setInstanceDir($path);
+        $this->admin->setAction($action);
+        try {
+            $response = $this->client->coreAdmin($this->admin);
+
+            return $response->getWasSuccessful();
+            // @codeCoverageIgnoreStart
+        } catch (Exception $error) {
+            $solrLogger = new SolrLogger();
+            $solrLogger->saveSolrLog('Config');
+
+            throw new Exception($error);
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+
+    /**
+     * Reload the given core
+     *
+     * @param $core
+     * @return StatusResult|null
+     */
+    public function coreReload($core)
+    {
+        $reload = $this->admin->createReload();
+        $reload->setCore($core);
+
+        $this->admin->setAction($reload);
+
+        $response = $this->client->coreAdmin($this->admin);
+
+        return $response->getStatusResult();
+    }
+
+    /**
+     * Get the core status
+     *
+     * @param string $core
+     * @return StatusResult|null
+     */
+    public function coreStatus($core)
+    {
+        $status = $this->admin->createStatus();
+        $status->setCore($core);
+
+        $this->admin->setAction($status);
+        $response = $this->client->coreAdmin($this->admin);
+
+        return $response->getStatusResult();
+    }
+
+    /**
+     * Remove a core from Solr
+     *
+     * @param string $core core name
+     * @return StatusResult|null A result is successful
+     */
+    public function coreUnload($core)
+    {
+        $unload = $this->admin->createUnload();
+        $unload->setCore($core);
+
+        $this->admin->setAction($unload);
+        $response = $this->client->coreAdmin($this->admin);
+
+        return $response->getStatusResult();
+    }
+
+    /**
+     * Get the admin
+     *
+     * @return CoreAdminQuery
+     */
+    public function getAdmin(): CoreAdminQuery
+    {
+        return $this->admin;
+    }
+
+    /**
+     * Set the admin
+     *
+     * @param CoreAdminQuery $admin
+     * @return self
+     */
+    public function setAdmin($admin): self
+    {
+        $this->admin = $admin;
+
+        return $this;
+    }
+
+    /**
+     * Get the client
+     *
+     * @return Client
+     */
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    /**
+     * Set the client
+     *
+     * @param Client $client
+     * @return self
+     */
+    public function setClient($client): self
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * Check if we are in debug mode
+     *
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return $this->debug;
+    }
+
+    /**
+     * Set the debug mode
+     *
+     * @param bool $debug
+     * @return self
+     */
+    public function setDebug(bool $debug): self
+    {
+        $this->debug = $debug;
+
+        return $this;
+    }
+
+
+    /**
+     * Is the given class a valid class to index
+     * Does not discriminate against the indexes. All indexes are worth the same
+     *
+     * @param string $class
+     * @return bool
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     */
+    public function isValidClass($class): bool
+    {
+        $classes = $this->getValidClasses();
+
+        return in_array($class, $classes, true);
+    }
+
+    /**
+     * Get all classes from all indexes and return them.
+     * Used to get all classes that are to be indexed on change
+     * Note, only base classes are in this object. A publish recursive is required
+     * when any change from a relation is published.
+     *
+     * @return array
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     */
+    public function getValidClasses(): array
+    {
+        /** @var CacheInterface $cache */
+        $cache = Injector::inst()->get(CacheInterface::class . '.SolrCache');
+
+        if ($cache->has('ValidClasses')) {
+            return $cache->get('ValidClasses');
+        }
+
+        $indexes = $this->getValidIndexes();
+        $classes = [];
+        foreach ($indexes as $index) {
+            $classes = $this->getClassesInHierarchy($index, $classes);
+            if (!empty($exclude = singleton($index)->config()->get('exclude_classes'))) {
+                $classes = array_diff($classes, $exclude);
+            }
+        }
+
+        $cache->set('ValidClasses', array_unique($classes));
+
+        return array_unique($classes);
+    }
+
+    /**
+     * Get the classes in hierarchy to see if it's valid
+     *
+     * @param string $index Index to check classes for
+     * @param array $classes Classes to get hierarchy for
+     * @return array
+     * @throws ReflectionException
+     */
+    protected function getClassesInHierarchy($index, array $classes): array
+    {
+        $indexClasses = singleton($index)->getClasses();
+        foreach ($indexClasses as $class) {
+            $classes = array_merge($classes, FieldResolver::getHierarchy($class));
+        }
+
+        return $classes;
     }
 }

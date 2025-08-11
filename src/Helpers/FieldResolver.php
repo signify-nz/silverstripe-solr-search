@@ -1,16 +1,19 @@
 <?php
+
 /**
  * class FieldResolver|Firesphere\SolrSearch\Helpers\FieldResolver Identify fields or relations in a DataObject
  *
  * @package Firesphere\Solr\Search
  * @author Simon `Firesphere` Erkelens; Marco `Sheepy` Hermo
  * @copyright Copyright (c) 2018 - now() Firesphere & Sheepy
+ * @author Signify Ltd <info@signify.co.nz>
+ * Signify Ltd modified code in July 2025
  */
 
 namespace Firesphere\SolrSearch\Helpers;
 
 use Exception;
-use Firesphere\SolrSearch\Traits\GetSetSearchResolverTrait;
+use Firesphere\SolrSearch\Indexes\BaseIndex;
 use ReflectionException;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
@@ -24,8 +27,6 @@ use SilverStripe\ORM\DataObjectSchema;
  */
 class FieldResolver
 {
-    use GetSetSearchResolverTrait;
-
     /**
      * @var array Class Ancestry
      */
@@ -34,6 +35,10 @@ class FieldResolver
      * @var array Class Hierarchy, could be replaced with Ancestry
      */
     protected static $hierarchy = [];
+    /**
+     * @var BaseIndex Index to use
+     */
+    protected $index;
 
     /**
      * Check if class is subclass of (a) the class in $instanceOf, or (b) any of the classes in the array $instanceOf
@@ -443,5 +448,28 @@ class FieldResolver
         }
 
         return [$options, $next];
+    }
+
+    /**
+     * Get the current index
+     *
+     * @return BaseIndex
+     */
+    public function getIndex(): BaseIndex
+    {
+        return $this->index;
+    }
+
+    /**
+     * Set the current index
+     *
+     * @param mixed $index
+     * @return $this
+     */
+    public function setIndex($index)
+    {
+        $this->index = $index;
+
+        return $this;
     }
 }
