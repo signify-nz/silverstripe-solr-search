@@ -1,0 +1,6 @@
+---
+Name: SolrConfig
+---
+
+Firesphere\SolrSearch\Models\SolrLog:
+  deletion_period: false # Should be parsable by php's strtotime() function e.g. -1 week. False value will delete all logs.
