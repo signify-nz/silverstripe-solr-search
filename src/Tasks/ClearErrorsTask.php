@@ -36,7 +36,7 @@ class ClearErrorsTask extends BuildTask
     protected $description = 'Remove all errors in the database that are related to Solr indexing/configuring etc.';
 
     /**
-     * Run the truncate of the SolrLog table
+     * Delete entries from the SolrLog table
      * @inheritDoc
      */
     public function run($request)
