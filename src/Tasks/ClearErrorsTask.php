@@ -10,10 +10,8 @@
 
 namespace Firesphere\SolrSearch\Tasks;
 
-use Psr\Log\LoggerInterface;
-use SilverStripe\Core\Injector\Injector;
+use Firesphere\SolrSearch\Models\SolrLog;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\ORM\DB;
 
 /**
  * Class ClearErrorsTask
@@ -43,10 +41,6 @@ class ClearErrorsTask extends BuildTask
      */
     public function run($request)
     {
-        Injector::inst()->get(LoggerInterface::class)->warning(_t(
-            __class__ . ".CLEARLOG",
-            "Emptying logs for table SolrLog." . PHP_EOL . "WARNING: Any logs that are not inspected will be gone soon."
-        ));
-        DB::query('TRUNCATE TABLE `Solr_SolrLog`');
+        SolrLog::deleteLogs();
     }
 }
