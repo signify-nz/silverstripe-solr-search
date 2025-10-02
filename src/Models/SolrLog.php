@@ -201,17 +201,17 @@ class SolrLog extends DataObject implements PermissionProvider
      *
      * @return void
      */
-    public static function deleteLogs()
+    public static function truncateLogs()
     {
         $tableName = DataObject::getSchema()->tableName(self::class);
-        $deletion_schedule = Config::inst()->get(self::class, 'deletion_period') ?? 'now';
+        $deletionSchedule = Config::inst()->get(self::class, 'deletion_period') ?? 'now';
 
         Injector::inst()->get(LoggerInterface::class)->info(_t(
-            __class__ . ".CLEARLOG",
-            "Emptying logs for table " . $tableName . PHP_EOL
+            __class__ . '.CLEARLOG',
+            'Emptying logs for table ' . $tableName . PHP_EOL
         ));
 
-        $deleteDate = date('Y-m-d H:i:s', strtotime($deletion_schedule));
+        $deleteDate = date('Y-m-d H:i:s', strtotime($deletionSchedule));
         $logs = SolrLog::get()->filter(['Created:LessThan' => $deleteDate]);
         $count = $logs->count();
         if ($count) {

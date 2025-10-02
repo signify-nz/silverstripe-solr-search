@@ -107,7 +107,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     public function setup()
     {
-        SolrLog::deleteLogs();
+        SolrLog::truncateLogs();
         $this->addMessage('Clearing logs from DB.');
         $this->indexes = (new SolrCoreService())->getValidIndexes();
         $this->currentStep = 0;
