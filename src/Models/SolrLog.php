@@ -204,7 +204,12 @@ class SolrLog extends DataObject implements PermissionProvider
     public static function truncateLogs()
     {
         $tableName = DataObject::getSchema()->tableName(self::class);
-        $deletionSchedule = Config::inst()->get(self::class, 'deletion_period') ?? 'now';
+        $deletionSchedule = Config::inst()->get(self::class, 'deletion_period');
+
+        if (!$deletionSchedule) {
+            echo 'No valid deletion_period set, logs not truncated.';
+            return;
+        };
 
         Injector::inst()->get(LoggerInterface::class)->info(_t(
             __class__ . '.CLEARLOG',
