@@ -11,6 +11,8 @@
 
 namespace Firesphere\SolrSearch\Models;
 
+use DateInterval;
+use DateTime;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
@@ -206,17 +208,19 @@ class SolrLog extends DataObject implements PermissionProvider
         $tableName = DataObject::getSchema()->tableName(self::class);
         $deletionSchedule = Config::inst()->get(self::class, 'deletion_period');
 
-        if (!$deletionSchedule) {
+        if (!is_int($deletionSchedule) || $deletionSchedule < 0) {
             echo 'No valid deletion_period set, logs not truncated.';
             return;
         };
+
+        $deleteDate = (new DateTime())->sub(DateInterval::createFromDateString("{$deletionSchedule} days"))->format('Y-m-d H:i:s');
 
         Injector::inst()->get(LoggerInterface::class)->info(_t(
             __class__ . '.CLEARLOG',
             'Emptying logs for table ' . $tableName . PHP_EOL
         ));
 
-        $deleteDate = date('Y-m-d H:i:s', strtotime($deletionSchedule));
+
         $logs = SolrLog::get()->filter(['Created:LessThan' => $deleteDate]);
         $count = $logs->count();
         if ($count) {
