@@ -17,6 +17,7 @@ use SilverStripe\Dev\BuildTask;
  * Class ClearErrorsTask
  *
  * Clear out errors from the database to declutter the CMS.
+ * Consider running this task through the CLI, as it may take some time (especially if it has not been run before).
  *
  * @package Firesphere\Solr\Search
  */
