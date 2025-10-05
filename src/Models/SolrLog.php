@@ -213,7 +213,7 @@ class SolrLog extends DataObject implements PermissionProvider
             return;
         };
 
-        $deleteDate = (new DateTime())->sub(DateInterval::createFromDateString("{$deletionSchedule} days"))->format('Y-m-d H:i:s');
+        $deleteDate = (new DateTime())->sub(DateInterval::createFromDateString("{$deletionSchedule} days"))->format(DateTime::ATOM);
 
         Injector::inst()->get(LoggerInterface::class)->info(_t(
             __class__ . '.CLEARLOG',
