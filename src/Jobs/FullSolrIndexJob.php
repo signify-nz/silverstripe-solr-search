@@ -14,6 +14,7 @@ namespace Firesphere\SolrSearch\Jobs;
 use Exception;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
+use Firesphere\SolrSearch\Models\SolrLog;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Config\Config;
@@ -106,6 +107,8 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     public function setup()
     {
+        $logsDeleted = SolrLog::truncateLogs();
+        $this->addMessage('Cleared ' . $logsDeleted . ' logs from DB.');
         $this->indexes = (new SolrCoreService())->getValidIndexes();
         $this->currentStep = 0;
         $this->isComplete = false;
