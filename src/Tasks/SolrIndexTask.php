@@ -108,8 +108,8 @@ class SolrIndexTask extends BuildTask
         $start = time();
         $this->getLogger()->info(date('Y-m-d H:i:s'));
 
-        SolrLog::deleteLogs();
-        $this->getLogger()->info('Clearing logs from DB.');
+        $logsDeleted = SolrLog::truncateLogs();
+        $this->getLogger()->info('Clearing ' . $logsDeleted . ' logs from DB.');
 
         [$vars, $group, $isGroup] = $this->taskSetup($request);
         $groups = 0;
