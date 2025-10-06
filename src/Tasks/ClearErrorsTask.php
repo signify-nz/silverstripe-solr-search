@@ -44,6 +44,6 @@ class ClearErrorsTask extends BuildTask
      */
     public function run($request)
     {
-        SolrLog::deleteLogs();
+        SolrLog::truncateLogs();
     }
 }

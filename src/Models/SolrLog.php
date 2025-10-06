@@ -9,6 +9,8 @@
 
 namespace Firesphere\SolrSearch\Models;
 
+use DateInterval;
+use DateTime;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
@@ -193,31 +195,41 @@ class SolrLog extends DataObject implements PermissionProvider
         ];
     }
 
+
     /**
      * Delete logs older than a configurable date.
      *
-     * @return void
+     * @return int The number of logs deleted.
      */
-    public static function deleteLogs()
+    public static function truncateLogs()
     {
         $tableName = DataObject::getSchema()->tableName(self::class);
-        $deletion_schedule = Config::inst()->get(self::class, 'deletion_period') ?? 'now';
+        $deletionSchedule = Config::inst()->get(self::class, 'deletion_period');
+        $logger = Injector::inst()->get(LoggerInterface::class);
 
-        Injector::inst()->get(LoggerInterface::class)->info(_t(
-            __class__ . ".CLEARLOG",
-            "Emptying logs for table " . $tableName . PHP_EOL
+        if (!is_int($deletionSchedule) || $deletionSchedule < 0) {
+            $logger->info('The value of "deletion_period" is invalid, must be an integer >= 0 to trigger log truncation.');
+            return 0;
+        };
+
+        $deleteDate = (new DateTime())->sub(DateInterval::createFromDateString("{$deletionSchedule} days"))->format(DateTime::ATOM);
+
+        $logger->info(_t(
+            __class__ . '.CLEARLOG',
+            'Emptying logs for table ' . $tableName . PHP_EOL
         ));
 
-        $deleteDate = date('Y-m-d H:i:s', strtotime($deletion_schedule));
+
         $logs = SolrLog::get()->filter(['Created:LessThan' => $deleteDate]);
         $count = $logs->count();
         if ($count) {
-            echo('Deleting ' . $count . ' logs from the database.');
+            $logger->info('Deleting ' . $count . ' logs from the database.');
             $query = SQLDelete::create([$tableName]);
             $query->addWhere(['Created < ?' => $deleteDate]);
             $query->execute();
         } else {
-            echo('No logs were found older than the deletion date.');
+            $logger->info('No logs were found older than the deletion date.');
         }
+        return $count;
     }
 }
