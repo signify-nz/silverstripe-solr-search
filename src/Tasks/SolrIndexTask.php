@@ -13,6 +13,7 @@ use Exception;
 use Firesphere\SolrSearch\Factories\DocumentFactory;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
+use Firesphere\SolrSearch\Models\SolrLog;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Firesphere\SolrSearch\States\SiteState;
 use Firesphere\SolrSearch\Traits\LoggerTrait;
@@ -104,6 +105,10 @@ class SolrIndexTask extends BuildTask
     {
         $start = time();
         $this->getLogger()->info(date('Y-m-d H:i:s'));
+
+        $logsDeleted = SolrLog::truncateLogs();
+        $this->getLogger()->info('Clearing ' . $logsDeleted . ' logs from DB.');
+
         [$vars, $group, $isGroup] = $this->taskSetup($request);
         $groups = 0;
         $indexes = $this->service->getValidIndexes($request->getVar('index'));
