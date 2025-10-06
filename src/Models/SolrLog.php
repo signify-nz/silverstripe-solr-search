@@ -201,7 +201,7 @@ class SolrLog extends DataObject implements PermissionProvider
     /**
      * Delete logs older than a configurable date.
      *
-     * @return void
+     * @return int The number of logs deleted.
      */
     public static function truncateLogs()
     {
@@ -211,7 +211,7 @@ class SolrLog extends DataObject implements PermissionProvider
 
         if (!is_int($deletionSchedule) || $deletionSchedule < 0) {
             $logger->info('The value of "deletion_period" is invalid, must be an integer >= 0 to trigger log truncation.');
-            return;
+            return 0;
         };
 
         $deleteDate = (new DateTime())->sub(DateInterval::createFromDateString("{$deletionSchedule} days"))->format(DateTime::ATOM);
@@ -232,5 +232,6 @@ class SolrLog extends DataObject implements PermissionProvider
         } else {
             $logger->info('No logs were found older than the deletion date.');
         }
+        return $count;
     }
 }
