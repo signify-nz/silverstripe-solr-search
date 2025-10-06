@@ -27,14 +27,7 @@ The logs can be found at the URL `/admin/searchadmin/Firesphere-SolrSearch-Model
 
 As an admin, you can truncate the log database via the dev task `dev/tasks/SolrClearErrorsTask`.
 
-This will run automatically at the beginning of every reindex. The number of days after which logs are deleted is a configurable value, see config.yml.
-
-Consider running this task through the CLI, as it may take some time (especially if it has not been run before).
-
-```yaml
-Firesphere\SolrSearch\Models\SolrLog:
-  deletion_period: 10
-```
+Use this with caution though, as it will completely wipe the errors logged and no data will remain at all.
 
 It is strongly advised to only clear out the logs if they have all been reviewed and you are sure nothing serious is wrong.
 

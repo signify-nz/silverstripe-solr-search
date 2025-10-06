@@ -1,6 +1,0 @@
----
-Name: SolrConfig
----
-
-Firesphere\SolrSearch\Models\SolrLog:
-  deletion_period: 10 # the number of days after which logs will be deleted. A null/false value will prevent log deletion, 0 will delete all logs.
