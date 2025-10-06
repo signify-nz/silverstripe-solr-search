@@ -11,9 +11,15 @@
 
 namespace Firesphere\SolrSearch\Models;
 
+use DateInterval;
+use DateTime;
+use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
@@ -189,5 +195,43 @@ class SolrLog extends DataObject implements PermissionProvider
                 ),
             ],
         ];
+    }
+
+
+    /**
+     * Delete logs older than a configurable date.
+     *
+     * @return int The number of logs deleted.
+     */
+    public static function truncateLogs()
+    {
+        $tableName = DataObject::getSchema()->tableName(self::class);
+        $deletionSchedule = Config::inst()->get(self::class, 'deletion_period');
+        $logger = Injector::inst()->get(LoggerInterface::class);
+
+        if (!is_int($deletionSchedule) || $deletionSchedule < 0) {
+            $logger->info('The value of "deletion_period" is invalid, must be an integer >= 0 to trigger log truncation.');
+            return 0;
+        };
+
+        $deleteDate = (new DateTime())->sub(DateInterval::createFromDateString("{$deletionSchedule} days"))->format(DateTime::ATOM);
+
+        $logger->info(_t(
+            __class__ . '.CLEARLOG',
+            'Emptying logs for table ' . $tableName . PHP_EOL
+        ));
+
+
+        $logs = SolrLog::get()->filter(['Created:LessThan' => $deleteDate]);
+        $count = $logs->count();
+        if ($count) {
+            $logger->info('Deleting ' . $count . ' logs from the database.');
+            $query = SQLDelete::create([$tableName]);
+            $query->addWhere(['Created < ?' => $deleteDate]);
+            $query->execute();
+        } else {
+            $logger->info('No logs were found older than the deletion date.');
+        }
+        return $count;
     }
 }
