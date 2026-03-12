@@ -13,6 +13,7 @@ use Exception;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Interfaces\ConfigStore;
+use Firesphere\SolrSearch\Models\SolrLog;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Firesphere\SolrSearch\Stores\FileConfigStore;
 use Firesphere\SolrSearch\Stores\PostConfigStore;
@@ -21,6 +22,7 @@ use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ValidationException;
@@ -201,7 +203,11 @@ class SolrConfigureTask extends BuildTask
         );
         $this->logToBrowser($msg);
         $this->logToBrowser($error->getMessage());
-        SolrLogger::logMessage('ERROR', $msg);
+
+        $store = Config::inst()->get(SolrLog::class, 'store');
+        if ($store) {
+            SolrLogger::logMessage('ERROR', $msg);
+        }
     }
 
     /**

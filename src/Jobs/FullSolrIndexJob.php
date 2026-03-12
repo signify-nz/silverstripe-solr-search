@@ -271,7 +271,11 @@ class FullSolrIndexJob extends AbstractQueuedJob
         );
         $this->getLogger()->error($exception->getMessage());
         $this->getLogger()->error($msg);
-        SolrLogger::logMessage('ERROR', $msg);
+
+        $store = Config::inst()->get(SolrLog::class, 'store');
+        if ($store) {
+            SolrLogger::logMessage('ERROR', $msg);
+        }
     }
 
     /**
