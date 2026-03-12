@@ -3,4 +3,5 @@ Name: SolrConfig
 ---
 
 Firesphere\SolrSearch\Models\SolrLog:
-  deletion_period: 10 # the number of days after which logs will be deleted. A null/false value will prevent log deletion, 0 will delete all logs.
+  store: true         # Whether Solr logs should be stored in the database
+  deletion_period: 10 # The number of days after which logs will be deleted. A null/false value will prevent log deletion, 0 will delete all logs.
