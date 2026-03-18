@@ -18,6 +18,7 @@ use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\DB;
@@ -108,6 +109,12 @@ class SolrLogger
      */
     public function saveSolrLog($type = 'Query'): void
     {
+        $store = Config::inst()->get(SolrLog::class, 'store');
+        $typesToStore = Config::inst()->get(SolrLog::class, 'types_to_store');
+        if (!$store || (is_array($typesToStore) && !in_array($type, $typesToStore))) {
+            return;
+        }
+
         $options = array_merge($this->options, [
             'query' => [
                 'since' => 0,
