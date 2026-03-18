@@ -157,8 +157,10 @@ abstract class BaseIndex
         $service = Injector::inst()->get(SolrCoreService::class);
         $config = $service->getClient()->getOptions();
         $config['endpoint'] = $this->getConfig($config['endpoint']);
-        $this->client = $service->getClient();
-        $this->client->setOptions($config);
+
+        // We need to clone the client so the client attached to this index has the correct 'core' value set in config
+        $this->client = clone $service->getClient();
+        $this->client->setOptions($config, true);
 
         // Set up the schema service, only used in the generation of the schema
         /** @var SchemaFactory $schemaFactory */
