@@ -109,8 +109,9 @@ class SolrLogger
      */
     public function saveSolrLog($type = 'Query'): void
     {
+        $store = Config::inst()->get(SolrLog::class, 'store');
         $typesToStore = Config::inst()->get(SolrLog::class, 'types_to_store');
-        if (!in_array($type, $typesToStore)) {
+        if (!$store || (is_array($typesToStore) && !in_array($type, $typesToStore))) {
             return;
         }
 

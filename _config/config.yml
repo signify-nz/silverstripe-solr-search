@@ -3,12 +3,11 @@ Name: SolrConfig
 ---
 
 Firesphere\SolrSearch\Models\SolrLog:
-  # The types of solr log to store
+  # Should logs be stored
+  store: true
+
+  # The types of solr log to store, any empty array means all error types will be stored
   types_to_store:
-    - 'Query'
-    - 'Index'
-    - 'Config'
-    - 'Error'
 
   # The number of days after which logs will be deleted. A null/false value will prevent log deletion, 0 will delete all logs.
   deletion_period: 10

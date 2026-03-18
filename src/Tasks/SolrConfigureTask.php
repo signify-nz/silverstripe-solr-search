@@ -204,10 +204,7 @@ class SolrConfigureTask extends BuildTask
         $this->logToBrowser($msg);
         $this->logToBrowser($error->getMessage());
 
-        $store = Config::inst()->get(SolrLog::class, 'store');
-        if ($store) {
-            SolrLogger::logMessage('ERROR', $msg);
-        }
+        SolrLogger::logMessage('ERROR', $msg);
     }
 
     /**
