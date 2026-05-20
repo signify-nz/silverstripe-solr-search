@@ -17,12 +17,14 @@ use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Models\SolrLog;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Psr\Log\LoggerInterface;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\SS_List;
+use SilverStripe\Subsites\Model\Subsite;
 use Solarium\Exception\HttpException;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
@@ -169,6 +171,11 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     private function indexStateClass(string $index, string $class, string $group): void
     {
+        $subsiteFilter = null;
+        if (ClassInfo::exists(Subsite::class)) {
+            $subsiteFilter = Subsite::$disable_subsite_filter;
+            Subsite::$disable_subsite_filter = true;
+        }
         // Generate filtered list of local records
         $baseClass = DataObject::getSchema()->baseDataClass($class);
         /** @var DataList|DataObject[] $items */
@@ -180,6 +187,10 @@ class FullSolrIndexJob extends AbstractQueuedJob
             ->limit($this->getBatchLength(), ($group * $this->getBatchLength()));
         if ($items->count()) {
             $this->updateIndex($items);
+        }
+
+        if(!is_null($subsiteFilter)) {
+            Subsite::$disable_subsite_filter = $subsiteFilter;
         }
     }
 
