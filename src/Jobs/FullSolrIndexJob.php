@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class FullSolrIndexJob|Firesphere\SolrSearch\Jobs\FullSolrIndexJob Index Solr cores
  *
@@ -25,6 +26,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\SS_List;
 use SilverStripe\Subsites\Model\Subsite;
+use SilverStripe\Versioned\Versioned;
 use Solarium\Exception\HttpException;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
@@ -118,7 +120,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
         $this->addMessage('Calculated ' . $this->totalSteps . ' total batches to index.');
         $this->getLogger()->info('Calculated ' . $this->totalSteps . ' total batches to index.');
         $this->setService(Injector::inst()->get(SolrCoreService::class));
-        if($this->shouldClearIndex) {
+        if ($this->shouldClearIndex) {
             $this->clearIndexes();
         }
     }
@@ -155,7 +157,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     public function clearIndexes()
     {
         $service = $this->getService();
-        foreach($this->indexes as $index) {
+        foreach ($this->indexes as $index) {
             $service->doManipulate(ArrayList::create([]), SolrCoreService::DELETE_TYPE_ALL, Injector::inst()->get($index));
         }
     }
@@ -176,6 +178,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
             $subsiteFilter = Subsite::$disable_subsite_filter;
             Subsite::$disable_subsite_filter = true;
         }
+
         // Generate filtered list of local records
         $baseClass = DataObject::getSchema()->baseDataClass($class);
         /** @var DataList|DataObject[] $items */
@@ -183,13 +186,29 @@ class FullSolrIndexJob extends AbstractQueuedJob
         if (!empty($classes = Config::inst()->get($index, 'exclude_classes'))) {
             $items = $items->exclude(['ClassName' => $classes]);
         }
-        $items = $items->sort('ID ASC')
-            ->limit($this->getBatchLength(), ($group * $this->getBatchLength()));
-        if ($items->count()) {
-            $this->updateIndex($items);
+
+        // Index live content only. Queued jobs run without a request, so
+        // Versioned defaults to the draft stage; without forcing live here the
+        // job indexes draft-only and unpublished pages. Those records inflate
+        // the result count on the live site (the front-end rehydrates matches
+        // from the live stage and silently drops anything not present there).
+        // Use set_stage(), not set_reading_mode(Versioned::LIVE): the latter
+        // sets the malformed mode 'Live' (not 'Stage.Live'), which DataObject::get()
+        // does not treat as a live-stage filter, so drafts would still be indexed.
+        $readingMode = Versioned::get_reading_mode();
+        Versioned::set_stage(Versioned::LIVE);
+        try {
+            $items = $this->getIndexableRecords($index, $class)
+                ->sort('ID ASC')
+                ->limit($this->getBatchLength(), ($group * $this->getBatchLength()));
+            if ($items->count()) {
+                $this->updateIndex($items);
+            }
+        } finally {
+            Versioned::set_reading_mode($readingMode);
         }
 
-        if(!is_null($subsiteFilter)) {
+        if (!is_null($subsiteFilter)) {
             Subsite::$disable_subsite_filter = $subsiteFilter;
         }
     }
@@ -240,6 +259,30 @@ class FullSolrIndexJob extends AbstractQueuedJob
     }
 
     /**
+     * Build the filtered list of records to index for a class.
+     *
+     * Records are read in the caller's current Versioned reading mode, so
+     * callers must force {@link Versioned::LIVE} when indexing for the live
+     * site (see {@link indexStateClass()} and {@link getBatchesCount()}).
+     *
+     * @param  string $index
+     * @param  string $class
+     * @return DataList|DataObject[]
+     */
+    private function getIndexableRecords(string $index, string $class): DataList
+    {
+        // Generate filtered list of local records
+        $baseClass = DataObject::getSchema()->baseDataClass($class);
+        /** @var DataList|DataObject[] $items */
+        $items = DataObject::get($baseClass);
+        if (!empty($classes = Config::inst()->get($index, 'exclude_classes'))) {
+            $items = $items->exclude(['ClassName' => $classes]);
+        }
+
+        return $items;
+    }
+
+    /**
      * Calculate the number of batches that should be indexed for given class / index.
      *
      * @param  string $index
@@ -249,14 +292,14 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     protected function getBatchesCount(string $index, string $class, int $batchLength)
     {
-        // Generate filtered list of local records
-        $baseClass = DataObject::getSchema()->baseDataClass($class);
-        /** @var DataList|DataObject[] $items */
-        $items = DataObject::get($baseClass);
-        if (!empty($classes = Config::inst()->get($index, 'exclude_classes'))) {
-            $items = $items->exclude(['ClassName' => $classes]);
+        // Count live records only, to stay consistent with indexStateClass().
+        $readingMode = Versioned::get_reading_mode();
+        Versioned::set_stage(Versioned::LIVE);
+        try {
+            $batches = $this->getIndexableRecords($index, $class)->count() / $batchLength;
+        } finally {
+            Versioned::set_reading_mode($readingMode);
         }
-        $batches = $items->count() / $batchLength;
         $this->addMessage('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
         $this->getLogger()->info('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
         return ceil($batches);
@@ -277,7 +320,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     {
         $msg = sprintf(
             'Error indexing core %s,' . PHP_EOL .
-            'Please log in to the CMS to find out more about Indexing errors' . PHP_EOL,
+                'Please log in to the CMS to find out more about Indexing errors' . PHP_EOL,
             $index
         );
         $this->getLogger()->error($exception->getMessage());

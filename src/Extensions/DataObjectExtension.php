@@ -109,7 +109,11 @@ class DataObjectExtension extends DataExtension
         $ids = json_decode($record->IDs ?? '[]', 1) ?: [];
         $mode = Versioned::get_reading_mode();
         try {
-            Versioned::set_reading_mode(Versioned::LIVE);
+            // set_stage() produces a valid 'Stage.Live' reading mode. Passing
+            // Versioned::LIVE to set_reading_mode() sets the malformed mode
+            // 'Live', so relations read while building the document would fall
+            // back to draft rather than live.
+            Versioned::set_stage(Versioned::LIVE);
             $service->setDebug(false);
             $type = SolrCoreService::UPDATE_TYPE;
             // If the object should not show in search, remove it
