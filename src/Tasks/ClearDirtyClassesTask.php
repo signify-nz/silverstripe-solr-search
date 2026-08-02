@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class ClearDirtyClasses|Firesphere\SolrSearch\Tasks\ClearDirtyClasses Clear out classes that were not
  * succesfully updated or deleted in Solr.
@@ -18,13 +19,12 @@ use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Models\DirtyClass;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Firesphere\SolrSearch\Traits\LoggerTrait;
-use ReflectionException;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
-use SilverStripe\ORM\ValidationException;
-use Solarium\Exception\HttpException;
+use SilverStripe\PolyExecution\PolyOutput;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Class ClearDirtyClasses Clear out classes that were not succesfully updated or deleted in Solr.
@@ -41,15 +41,15 @@ class ClearDirtyClassesTask extends BuildTask
     /**
      * @var string URLSegment
      */
-    private static $segment = 'SolrClearDirtyClasses';
+    protected static string $commandName = 'SolrClearDirtyClasses';
     /**
      * @var string Title
      */
-    protected $title = 'Fix broken items in the Solr cores';
+    protected string $title = 'Fix broken items in the Solr cores';
     /**
      * @var string Description
      */
-    protected $description = 'Clear out classes that are marked as dirty on Solr.';
+    protected static string $description = 'Clear out classes that are marked as dirty on Solr.';
 
     /**
      * Clean up Dirty Classes in the index
@@ -57,18 +57,15 @@ class ClearDirtyClassesTask extends BuildTask
      * When there are dirty classes to update or delete, the run will attempt to clean up.
      * Dirty classes happen when changes to classes are not successfully updated in Solr
      *
-     * @param HTTPRequest $request
-     * @return void
-     * @throws HTTPException
-     * @throws ReflectionException
-     * @throws ValidationException
+     * @param InputInterface $input
+     * @return int
      */
-    public function run($request)
+    public function execute(InputInterface $input, PolyOutput $output): int
     {
         /** @var DataList|DirtyClass $dirtyObjectList */
         $dirtyObjectList = DirtyClass::get();
         /** @var SolrCoreService $service */
-        $service = new SolrCoreService();
+        $service = SolrCoreService::create();
         foreach ($dirtyObjectList as $dirtyObject) {
             $dirtyClasses = $this->getDirtyClasses($dirtyObject);
             try {
@@ -84,6 +81,7 @@ class ClearDirtyClassesTask extends BuildTask
         /** @var SolrLogger $solrLogger */
         $solrLogger = new SolrLogger();
         $solrLogger->saveSolrLog('Index');
+        return Command::SUCCESS;
     }
 
     /**
