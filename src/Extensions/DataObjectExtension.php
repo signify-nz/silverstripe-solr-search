@@ -23,8 +23,8 @@ use ReflectionException;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\InheritedPermissionsExtension;
@@ -32,7 +32,7 @@ use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Versioned\Versioned;
 use Solarium\Exception\HttpException;
 use Firesphere\SolrSearch\Traits\IndexedParentSolrUpdate;
-use SilverStripe\ORM\DataList;
+use SilverStripe\Model\List\DataList;
 
 /**
  * Class \Firesphere\SolrSearch\Compat\DataObjectExtension
@@ -42,7 +42,7 @@ use SilverStripe\ORM\DataList;
  * @package Firesphere\Solr\Search
  * @property DataObject|DataObjectExtension $owner
  */
-class DataObjectExtension extends DataExtension
+class DataObjectExtension extends Extension
 {
     /**
      * @var array Cached permission list
@@ -78,10 +78,12 @@ class DataObjectExtension extends DataExtension
      */
     protected function shouldPush()
     {
-        if (!Controller::has_curr()) {
+        $controller = Controller::curr();
+        if (!$controller) {
             return false;
         }
-        $request = Controller::curr()->getRequest();
+
+        $request = $controller->getRequest();
 
         return (!($request->getURL() &&
             strpos('dev/build', $request->getURL()) !== false));
@@ -141,7 +143,7 @@ class DataObjectExtension extends DataExtension
      * @return DirtyClass
      * @throws ValidationException
      */
-    protected function getDirtyClass(string $type, string $class = null)
+    protected function getDirtyClass(string $type, ?string $class = null)
     {
         $params = [
             'Class' => ($class ?? $this->owner->ClassName),
@@ -229,7 +231,7 @@ class DataObjectExtension extends DataExtension
      * @throws ValidationException
      * @throws HTTPException
      */
-    private function removeItem(DataObject $item = null)
+    private function removeItem(?DataObject $item = null)
     {
         /** @var DataObject $owner */
         $owner = $item ?? $this->owner;
