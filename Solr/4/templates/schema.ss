@@ -61,19 +61,19 @@
         <field name="ViewStatus" type="string" indexed="true" stored="true" required="true" multiValued="true"/>
         <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
         <% loop $CopyFields %>
-            <field name="$Field" type="$Type" indexed="true" stored="true" multiValued="true"/>
+            <field name="$FieldName" type="$Type" indexed="true" stored="true" multiValued="true"/>
         <% end_loop %>
         <% loop $FulltextFieldDefinitions %>
-            <field name="$Field" type="$Type" indexed="true" stored="$Stored" multiValued="$MultiValued"/>
+            <field name="$FieldName" type="$Type" indexed="true" stored="$Stored" multiValued="$MultiValued"/>
         <% end_loop %>
 
         <% loop $FilterFieldDefinitions %>
-            <field name="$Field" type="$Type" indexed="$Indexed" stored="$Stored" multiValued="$MultiValued"/>
+            <field name="$FieldName" type="$Type" indexed="$Indexed" stored="$Stored" multiValued="$MultiValued"/>
         <% end_loop %>
     </fields>
 
     <% loop $CopyFieldDefinitions %>
-        <copyField source="$Field" dest="$Destination"/>
+        <copyField source="$FieldName" dest="$Destination"/>
     <% end_loop %>
 
 

@@ -60,24 +60,24 @@
         <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
         <!-- Copyfields -->
         <% loop $CopyFields %>
-            <field name="$Field" type="$Type" indexed="true" stored="true" multiValued="true"/>
+            <field name="$FieldName" type="$Type" indexed="true" stored="true" multiValued="true"/>
         <% end_loop %>
         <!-- End Copyfields -->
         <!-- Fulltext fields -->
         <% loop $FulltextFieldDefinitions %>
-            <field name="$Field" type="$Type" indexed="true" stored="$Stored" multiValued="$MultiValued"/>
+            <field name="$FieldName" type="$Type" indexed="true" stored="$Stored" multiValued="$MultiValued"/>
         <% end_loop %>
         <!-- End Fulltext fields -->
 
         <!-- Filter/Facet fields -->
         <% loop $FilterFieldDefinitions %>
-            <field name="$Field" type="$Type" indexed="$Indexed" stored="$Stored" multiValued="$MultiValued"/>
+            <field name="$FieldName" type="$Type" indexed="$Indexed" stored="$Stored" multiValued="$MultiValued"/>
         <% end_loop %>
         <!-- End Filter/Facet fields -->
     </fields>
 
     <% loop $CopyFieldDefinitions %>
-        <copyField source="$Field" dest="$Destination"/>
+        <copyField source="$FieldName" dest="$Destination"/>
     <% end_loop %>
 
     <uniqueKey>$IDField</uniqueKey>

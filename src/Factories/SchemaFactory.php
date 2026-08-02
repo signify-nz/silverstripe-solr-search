@@ -19,9 +19,9 @@ use Firesphere\SolrSearch\Services\SolrCoreService;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Manifest\ModuleLoader;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 
 /**
@@ -29,7 +29,7 @@ use Firesphere\SolrSearch\Indexes\BaseIndex;
  *
  * @package Firesphere\Solr\Search
  */
-class SchemaFactory extends ViewableData
+class SchemaFactory extends ModelData
 {
     /**
      * @var array Fields that always need to be stored, by Index name
@@ -124,7 +124,7 @@ class SchemaFactory extends ViewableData
             // Boosted fields are always stored
             $store = ($this->store || in_array($name, $storeFields) ? 'true' : 'false');
             $item = [
-                'Field'       => $name,
+                'FieldName'   => $name,
                 'Type'        => $typeMap[$options['type']],
                 'Indexed'     => 'true',
                 'Stored'      => $options['store'] ?? $store,
@@ -181,7 +181,7 @@ class SchemaFactory extends ViewableData
         $defaultType = SolrCoreService::singleton()->getSolrVersion() === 4 ? 'htmltext' : 'stemfield';
         foreach ($fields as $field => $copyFields) {
             $item = [
-                'Field' => $field,
+                'FieldName' => $field,
                 'Type' => (array_key_exists('type', $copyFields) ? $copyFields['type'] : $defaultType)
             ];
 
