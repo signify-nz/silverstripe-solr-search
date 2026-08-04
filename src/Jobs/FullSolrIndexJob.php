@@ -223,13 +223,14 @@ class FullSolrIndexJob extends AbstractQueuedJob
     protected function updateIndex($items): void
     {
         $index = $this->getIndex();
-        $client = $index->getClient();
-        $update = $client->createUpdate();
         $service = $this->getService();
         $service->setDebug(true);
         try {
-            $service->updateIndex($index, $items, $update);
-            $client->update($update);
+            // Use doManipulate() rather than building the update directly, so the
+            // batch is committed (and the searcher reopened) the same way the
+            // incremental index path does. Without this, added documents are
+            // written to Solr's transaction log but never become searchable.
+            $service->doManipulate($items, SolrCoreService::UPDATE_TYPE, $index);
         } catch (Exception $error) {
             $this->logException($index->getIndexName(), $error);
         }
@@ -300,9 +301,11 @@ class FullSolrIndexJob extends AbstractQueuedJob
         } finally {
             Versioned::set_reading_mode($readingMode);
         }
-        $this->addMessage('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
-        $this->getLogger()->info('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
-        return ceil($batches);
+
+        $batches = (int) ceil($batches);
+        $this->addMessage('Adding ' . $batches . ' batches of ' . $class . ' to index.');
+        $this->getLogger()->info('Adding ' . $batches . ' batches of ' . $class . ' to index.');
+        return $batches;
     }
 
     /**
