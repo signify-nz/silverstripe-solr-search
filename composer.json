@@ -30,7 +30,7 @@
     "silverstripe/framework": "^6",
     "symbiote/silverstripe-queuedjobs": "^6",
     "solarium/solarium": "^6.0",
-    "minimalcode/search": "^1.0",
+    "signify-nz/minimalcode-search": "^2.0",
     "guzzlehttp/guzzle": "^6.3|^7",
     "http-interop/http-factory-guzzle": "^1",
     "symfony/event-dispatcher": "^7",
