@@ -13,7 +13,6 @@
 namespace Firesphere\SolrSearch\Jobs;
 
 use Exception;
-use stdClass;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Models\SolrLog;
@@ -42,19 +41,6 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
  */
 class FullSolrIndexJob extends AbstractQueuedJob
 {
-    /**
-     * Class info of content to be indexed.
-     * Fits the following structure:
-     * [
-     *      'index' => string,
-     *      'class' => string,
-     *      'group' => int
-     * ]
-     *
-     * @var array
-     */
-    protected $indexableData = [];
-
     /**
      * The indexes that need to run.
      *
@@ -161,37 +147,6 @@ class FullSolrIndexJob extends AbstractQueuedJob
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * $indexableData is a declared property (not a dynamic one), so unlike the rest of a job's
-     * custom state, it isn't automatically round-tripped through $jobData by the base class's
-     * __get()/__set() magic methods. Without this override, a job that restarts in a fresh
-     * process (e.g. after a timeout) loses track of which batches are left to run.
-     */
-    public function getJobData()
-    {
-        if (!$this->jobData instanceof stdClass) {
-            $this->jobData = new stdClass();
-        }
-        $this->jobData->indexableData = $this->indexableData;
-
-        return parent::getJobData();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages)
-    {
-        parent::setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages);
-
-        if (!$this->jobData instanceof stdClass) {
-            $this->jobData = new stdClass();
-        }
-        $this->indexableData = $this->jobData->indexableData ?? [];
-    }
-
-    /**
      * Clear the given index if a full re-index is needed
      *
      * @throws Exception
@@ -286,6 +241,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     protected function configureIndexableData(): void
     {
         $steps = 0;
+        $indexableData = [];
         $indexes = $this->indexes;
         foreach ($indexes as $index) {
             $indexInstance = Injector::inst()->get($index);
@@ -294,10 +250,14 @@ class FullSolrIndexJob extends AbstractQueuedJob
                 $batchesCount = $this->getBatchesCount($index, $class, $batchLength);
                 $steps += $batchesCount;
                 for ($n = 0; $n < $batchesCount; $n++) {
-                    $this->indexableData[] = ['index' => $index, 'class' => $class, 'group' => $n];
+                    $indexableData[] = ['index' => $index, 'class' => $class, 'group' => $n];
                 }
             }
         }
+        // Deliberately not a declared property: AbstractQueuedJob's __get()/__set() only
+        // route *undeclared* properties through $jobData, which is what actually gets
+        // persisted to the job descriptor and restored after a restart.
+        $this->indexableData = $indexableData;
         $this->totalSteps = $steps;
     }
 
@@ -372,29 +332,6 @@ class FullSolrIndexJob extends AbstractQueuedJob
         $this->getLogger()->error($msg);
 
         SolrLogger::logMessage('ERROR', $msg);
-    }
-
-    /**
-     * Get array of data to index
-     *
-     * @return array
-     */
-    public function getIndexableData(): array
-    {
-        return $this->indexableData;
-    }
-
-    /**
-     * Set array of data to index
-     *
-     * @param array $indexableData
-     * @return FullSolrIndexJob
-     */
-    public function setIndexableData($indexableData)
-    {
-        $this->indexableData = $indexableData;
-
-        return $this;
     }
 
     /**
