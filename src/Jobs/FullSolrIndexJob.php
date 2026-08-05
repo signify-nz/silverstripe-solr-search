@@ -13,6 +13,7 @@
 namespace Firesphere\SolrSearch\Jobs;
 
 use Exception;
+use stdClass;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Models\SolrLog;
@@ -71,9 +72,15 @@ class FullSolrIndexJob extends AbstractQueuedJob
     /**
      * Default batch length.
      *
+     * Kept small deliberately: if a batch fails or the job times out part way through,
+     * the whole batch is retried from scratch (see {@link process()}). Building the
+     * documents for a batch (relation traversal, permission checks per record) is the
+     * expensive part, not the Solr write, so a small batch keeps a retry cheap rather
+     * than needing to track progress within a batch.
+     *
      * @var int
      */
-    protected $batchLength = 500;
+    protected $batchLength = 50;
 
     /**
      * The logger to use
@@ -134,19 +141,54 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     public function process()
     {
-        $this->currentStep++;
+        $indexableData = $this->indexableData;
 
-        $data = array_pop($this->indexableData);
+        $data = array_pop($indexableData);
         if (!$this->index instanceof $data['index']) {
             $this->setIndex(Injector::inst()->get($data['index']));
         };
         $this->indexStateClass($data['index'], $data['class'], $data['group']);
+
+        $this->indexableData = $indexableData;
+
+        $this->currentStep++;
 
         if ($this->currentStep >= $this->totalSteps) {
             $this->isComplete = true;
         }
 
         return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * $indexableData is a declared property (not a dynamic one), so unlike the rest of a job's
+     * custom state, it isn't automatically round-tripped through $jobData by the base class's
+     * __get()/__set() magic methods. Without this override, a job that restarts in a fresh
+     * process (e.g. after a timeout) loses track of which batches are left to run.
+     */
+    public function getJobData()
+    {
+        if (!$this->jobData instanceof stdClass) {
+            $this->jobData = new stdClass();
+        }
+        $this->jobData->indexableData = $this->indexableData;
+
+        return parent::getJobData();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages)
+    {
+        parent::setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages);
+
+        if (!$this->jobData instanceof stdClass) {
+            $this->jobData = new stdClass();
+        }
+        $this->indexableData = $this->jobData->indexableData ?? [];
     }
 
     /**
