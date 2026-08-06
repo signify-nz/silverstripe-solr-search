@@ -1,6 +1,6 @@
 # SilverStripe Solr Search
 
-Advanced, Solr-powered search for SilverStripe 4 and 5, built on
+Advanced, Solr-powered search for SilverStripe 6, built on
 [Solarium](https://solarium.readthedocs.io). Define what to index in PHP,
 configure connections in YAML, and query Solr with a fluent API.
 
@@ -22,8 +22,8 @@ configure connections in YAML, and query Solr with a fluent API.
 
 ## Requirements
 
-- PHP 7.3+
-- SilverStripe Framework 4 or 5
+- PHP 8.3+
+- SilverStripe Framework 6
 - [symbiote/silverstripe-queuedjobs](https://github.com/symbiote/silverstripe-queuedjobs)
 - A running Solr instance (4 / 8 / 9) reachable from the application
 - [Solarium](https://solarium.readthedocs.io) (installed automatically via Composer)
