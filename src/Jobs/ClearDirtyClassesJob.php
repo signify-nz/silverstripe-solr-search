@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class ClearDirtyClassesJob|Firesphere\SolrSearch\Jobs\ClearDirtyClassesJob Clear out the dirty classes by pushing
  * them again to solr
@@ -12,10 +13,11 @@ namespace Firesphere\SolrSearch\Jobs;
 
 use Firesphere\SolrSearch\Tasks\ClearDirtyClassesTask;
 use ReflectionException;
-use SilverStripe\Control\NullHTTPRequest;
 use SilverStripe\ORM\ValidationException;
+use SilverStripe\PolyExecution\PolyOutput;
 use Solarium\Exception\HttpException;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symfony\Component\Console\Input\ArrayInput;
 
 /**
  * Class ClearDirtyClassesJob is the queued job version of the ClearDirtyClassesTask
@@ -46,9 +48,11 @@ class ClearDirtyClassesJob extends AbstractQueuedJob
      */
     public function process()
     {
-        $request = new NullHTTPRequest();
         $task = new ClearDirtyClassesTask();
-        $task->run($request);
+
+        $input = new ArrayInput([]);
+        $output = PolyOutput::create(PolyOutput::FORMAT_ANSI);
+        $task->run($input, $output);
 
         $this->isComplete = true;
     }
