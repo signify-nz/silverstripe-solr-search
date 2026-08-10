@@ -208,7 +208,7 @@ class SolrConfigureTask extends BuildTask
         $this->logToBrowser($msg);
         $this->logToBrowser($error->getMessage());
 
-        SolrLogger::logMessage('ERROR', $msg);
+        SolrLogger::logMessage('Config', $msg);
     }
 
     /**

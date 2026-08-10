@@ -20,7 +20,7 @@ use Firesphere\SolrSearch\Models\DirtyClass;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Firesphere\SolrSearch\Traits\LoggerTrait;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\PolyExecution\PolyOutput;
 use Symfony\Component\Console\Command\Command;
