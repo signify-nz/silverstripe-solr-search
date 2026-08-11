@@ -346,10 +346,10 @@ class FieldResolver
         /** @var DataObject $singleton */
         $singleton = singleton($dataclass);
 
-        $type = $singleton->castingClass($field);
+        $type = $singleton->castingHelper($field);
 
         if (!$type) {
-            $type = 'String';
+            $type = 'Text';
         }
 
         return $type;
