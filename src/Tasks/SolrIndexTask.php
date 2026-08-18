@@ -57,9 +57,9 @@ class SolrIndexTask extends BuildTask
         $solrIndexJob = Injector::inst()->create(SolrIndexJob::class);
 
         $id = $queuedJobService->queueJob($solrIndexJob);
-        echo ("Solr Index Job added to job queue with ID: " . $id . "\n");
+        $output->writeForHtml("Solr Index Job added to job queue with ID: $id<br>");
         if (!Director::is_cli()) {
-            echo ("Visit <a href=\"/admin/queuedjobs\">queued jobs admin</a> to see job status \n");
+            $output->writeForHtml("Visit <a href=\"/admin/queuedjobs\">queued jobs admin</a> to see job status<br>");
         }
 
         return Command::SUCCESS;
