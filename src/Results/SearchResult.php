@@ -16,13 +16,13 @@ use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Queries\BaseQuery;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use SilverStripe\Control\Controller;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
-use SilverStripe\ORM\PaginatedList;
-use SilverStripe\View\ArrayData;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\List\PaginatedList;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\Model\ModelData;
+use SilverStripe\Model\List\ArrayList;
 use Solarium\Component\Result\Facet\Field;
 use Solarium\Component\Result\FacetSet;
 use Solarium\Component\Result\Spellcheck\Collation;
@@ -40,7 +40,7 @@ use Solarium\Component\Result\Highlighting\Highlighting;
  *
  * @package Firesphere\Solr\Search
  */
-class SearchResult extends ViewableData
+class SearchResult extends ModelData
 {
     /**
      * @var BaseQuery Query that has been executed

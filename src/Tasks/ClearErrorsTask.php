@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class ClearErrorsTask|Firesphere\SolrSearch\Tasks\ClearErrorsTask Clear out errors from the database to
  * declutter the CMS.
@@ -12,6 +13,9 @@ namespace Firesphere\SolrSearch\Tasks;
 
 use Firesphere\SolrSearch\Models\SolrLog;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Class ClearErrorsTask
@@ -26,23 +30,25 @@ class ClearErrorsTask extends BuildTask
     /**
      * @var string URLSegment
      */
-    private static $segment = 'SolrClearErrorsTask';
+    protected static string $commandName = 'SolrClearErrorsTask';
     /**
      * @var string Title
      */
-    protected $title = 'Clear out all errors from Solr in the database';
+    protected string $title = 'Clear out all errors from Solr in the database';
     /**
      * @var string Description
      */
-    protected $description = 'Remove all errors in the database that are related to Solr indexing/configuring etc.';
+    protected static string $description = 'Remove all errors in the database that are related to Solr indexing/configuring etc.';
 
     /**
      * Delete entries from the SolrLog table
      * @inheritDoc
      */
-    public function run($request)
+    public function execute(InputInterface $input, PolyOutput $output): int
     {
         $logsDeleted = SolrLog::truncateLogs();
-        echo('Deleted ' . $logsDeleted . ' logs from the database.');
+        $output->writeln('Deleted ' . $logsDeleted . ' logs from the database.');
+
+        return Command::SUCCESS;
     }
 }

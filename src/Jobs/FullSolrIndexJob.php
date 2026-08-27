@@ -21,10 +21,10 @@ use Psr\Log\LoggerInterface;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\List\SS_List;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\SS_List;
 use SilverStripe\Subsites\Model\Subsite;
 use SilverStripe\Versioned\Versioned;
 use Solarium\Exception\HttpException;
@@ -42,19 +42,6 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 class FullSolrIndexJob extends AbstractQueuedJob
 {
     /**
-     * Class info of content to be indexed.
-     * Fits the following structure:
-     * [
-     *      'index' => string,
-     *      'class' => string,
-     *      'group' => int
-     * ]
-     *
-     * @var array
-     */
-    protected $indexableData = [];
-
-    /**
      * The indexes that need to run.
      *
      * @var array
@@ -71,9 +58,15 @@ class FullSolrIndexJob extends AbstractQueuedJob
     /**
      * Default batch length.
      *
+     * Kept small deliberately: if a batch fails or the job times out part way through,
+     * the whole batch is retried from scratch (see {@link process()}). Building the
+     * documents for a batch (relation traversal, permission checks per record) is the
+     * expensive part, not the Solr write, so a small batch keeps a retry cheap rather
+     * than needing to track progress within a batch.
+     *
      * @var int
      */
-    protected $batchLength = 500;
+    protected $batchLength = 50;
 
     /**
      * The logger to use
@@ -134,13 +127,17 @@ class FullSolrIndexJob extends AbstractQueuedJob
      */
     public function process()
     {
-        $this->currentStep++;
+        $indexableData = $this->indexableData;
 
-        $data = array_pop($this->indexableData);
+        $data = array_pop($indexableData);
         if (!$this->index instanceof $data['index']) {
             $this->setIndex(Injector::inst()->get($data['index']));
         };
         $this->indexStateClass($data['index'], $data['class'], $data['group']);
+
+        $this->indexableData = $indexableData;
+
+        $this->currentStep++;
 
         if ($this->currentStep >= $this->totalSteps) {
             $this->isComplete = true;
@@ -223,13 +220,14 @@ class FullSolrIndexJob extends AbstractQueuedJob
     protected function updateIndex($items): void
     {
         $index = $this->getIndex();
-        $client = $index->getClient();
-        $update = $client->createUpdate();
         $service = $this->getService();
         $service->setDebug(true);
         try {
-            $service->updateIndex($index, $items, $update);
-            $client->update($update);
+            // Use doManipulate() rather than building the update directly, so the
+            // batch is committed (and the searcher reopened) the same way the
+            // incremental index path does. Without this, added documents are
+            // written to Solr's transaction log but never become searchable.
+            $service->doManipulate($items, SolrCoreService::UPDATE_TYPE, $index);
         } catch (Exception $error) {
             $this->logException($index->getIndexName(), $error);
         }
@@ -243,6 +241,7 @@ class FullSolrIndexJob extends AbstractQueuedJob
     protected function configureIndexableData(): void
     {
         $steps = 0;
+        $indexableData = [];
         $indexes = $this->indexes;
         foreach ($indexes as $index) {
             $indexInstance = Injector::inst()->get($index);
@@ -251,10 +250,14 @@ class FullSolrIndexJob extends AbstractQueuedJob
                 $batchesCount = $this->getBatchesCount($index, $class, $batchLength);
                 $steps += $batchesCount;
                 for ($n = 0; $n < $batchesCount; $n++) {
-                    $this->indexableData[] = ['index' => $index, 'class' => $class, 'group' => $n];
+                    $indexableData[] = ['index' => $index, 'class' => $class, 'group' => $n];
                 }
             }
         }
+        // Deliberately not a declared property: AbstractQueuedJob's __get()/__set() only
+        // route *undeclared* properties through $jobData, which is what actually gets
+        // persisted to the job descriptor and restored after a restart.
+        $this->indexableData = $indexableData;
         $this->totalSteps = $steps;
     }
 
@@ -300,9 +303,11 @@ class FullSolrIndexJob extends AbstractQueuedJob
         } finally {
             Versioned::set_reading_mode($readingMode);
         }
-        $this->addMessage('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
-        $this->getLogger()->info('Adding ' . ceil($batches) . ' batches of ' . $class . ' to index.');
-        return ceil($batches);
+
+        $batches = (int) ceil($batches);
+        $this->addMessage('Adding ' . $batches . ' batches of ' . $class . ' to index.');
+        $this->getLogger()->info('Adding ' . $batches . ' batches of ' . $class . ' to index.');
+        return $batches;
     }
 
     /**
@@ -327,29 +332,6 @@ class FullSolrIndexJob extends AbstractQueuedJob
         $this->getLogger()->error($msg);
 
         SolrLogger::logMessage('ERROR', $msg);
-    }
-
-    /**
-     * Get array of data to index
-     *
-     * @return array
-     */
-    public function getIndexableData(): array
-    {
-        return $this->indexableData;
-    }
-
-    /**
-     * Set array of data to index
-     *
-     * @param array $indexableData
-     * @return FullSolrIndexJob
-     */
-    public function setIndexableData($indexableData)
-    {
-        $this->indexableData = $indexableData;
-
-        return $this;
     }
 
     /**

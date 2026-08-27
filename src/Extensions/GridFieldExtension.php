@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class GridFieldExtension|Firesphere\SolrSearch\Extensions\GridFieldExtension Add colours to the GridField
  *
@@ -13,7 +14,7 @@ use Firesphere\SolrSearch\Models\SolrLog;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
 /**
  * Class GridFieldExtension
@@ -33,7 +34,7 @@ class GridFieldExtension extends Extension
      * @param string $index
      * @param DataObject $record
      */
-    public function updateNewRowClasses(array &$classes, int $total, string $index, ViewableData $record)
+    public function updateNewRowClasses(array &$classes, int $total, string $index, ModelData $record)
     {
         if ($record instanceof SolrLog) {
             $classes[] = $record->getExtraClass();

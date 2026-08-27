@@ -1,4 +1,5 @@
 <?php
+
 /**
  * class SolrConfigureJob|Firesphere\SolrSearch\Jobs\SolrConfigureJob Configure cores from the CMS
  *
@@ -14,8 +15,10 @@ use Psr\SimpleCache\InvalidArgumentException;
 use SilverStripe\Control\NullHTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ValidationException;
+use SilverStripe\PolyExecution\PolyOutput;
 use Solarium\Exception\HttpException;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symfony\Component\Console\Input\ArrayInput;
 
 /**
  * Class SolrConfigureJob
@@ -49,7 +52,11 @@ class SolrConfigureJob extends AbstractQueuedJob
     {
         /** @var SolrConfigureTask $task */
         $task = Injector::inst()->get(SolrConfigureTask::class);
-        $task->run(new NullHTTPRequest());
+
+        $input = new ArrayInput([]);
+        $output = PolyOutput::create(PolyOutput::FORMAT_ANSI);
+        $task->run($input, $output);
+
         // Mark as complete if everything is fine
         $this->isComplete = true;
     }

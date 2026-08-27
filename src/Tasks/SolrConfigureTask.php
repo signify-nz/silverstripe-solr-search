@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class SolrConfigureTask|Firesphere\SolrSearch\Tasks\SolrConfigureTask Configure Solr cores
  *
@@ -13,7 +14,6 @@ use Exception;
 use Firesphere\SolrSearch\Helpers\SolrLogger;
 use Firesphere\SolrSearch\Indexes\BaseIndex;
 use Firesphere\SolrSearch\Interfaces\ConfigStore;
-use Firesphere\SolrSearch\Models\SolrLog;
 use Firesphere\SolrSearch\Services\SolrCoreService;
 use Firesphere\SolrSearch\Stores\FileConfigStore;
 use Firesphere\SolrSearch\Stores\PostConfigStore;
@@ -22,11 +22,13 @@ use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ValidationException;
+use SilverStripe\PolyExecution\PolyOutput;
 use Solarium\Exception\HttpException;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Class SolrConfigureTask
@@ -48,15 +50,15 @@ class SolrConfigureTask extends BuildTask
     /**
      * @var string URLSegment
      */
-    private static $segment = 'SolrConfigureTask';
+    protected static string $commandName = 'SolrConfigureTask';
     /**
      * @var string Title
      */
-    protected $title = 'Configure Solr cores';
+    protected string $title = 'Configure Solr cores';
     /**
      * @var string Description
      */
-    protected $description = 'Create or reload a Solr Core by adding or reloading a configuration.';
+    protected static string $description = 'Create or reload a Solr Core by adding or reloading a configuration.';
 
     /**
      * SolrConfigureTask constructor.
@@ -76,14 +78,14 @@ class SolrConfigureTask extends BuildTask
      * @throws InvalidArgumentException
      * @throws ValidationException
      */
-    public function run($request)
+    public function execute(InputInterface $input, PolyOutput $output): int
     {
         /** @var CacheInterface $cache */
         $cache = Injector::inst()->get(CacheInterface::class . '.SolrCache');
         $cache->delete('ValidClasses');
         $this->extend('onBeforeSolrConfigureTask', $request);
 
-        $indexes = (new SolrCoreService())->getValidIndexes();
+        $indexes = SolrCoreService::create()->getValidIndexes();
 
         foreach ($indexes as $index) {
             try {
@@ -104,6 +106,8 @@ class SolrConfigureTask extends BuildTask
         // Grab the latest logs
         $solrLogger = new SolrLogger();
         $solrLogger->saveSolrLog('Config');
+
+        return Command::SUCCESS;
     }
 
     /**
@@ -204,7 +208,7 @@ class SolrConfigureTask extends BuildTask
         $this->logToBrowser($msg);
         $this->logToBrowser($error->getMessage());
 
-        SolrLogger::logMessage('ERROR', $msg);
+        SolrLogger::logMessage('Config', $msg);
     }
 
     /**
@@ -216,8 +220,8 @@ class SolrConfigureTask extends BuildTask
     private function logToBrowser(string $message): void
     {
         if (!Director::is_cli()) {
-            echo($message);
-            echo("<br>");
+            echo ($message);
+            echo ("<br>");
         }
     }
 }

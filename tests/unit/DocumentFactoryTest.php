@@ -13,7 +13,7 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 use Solarium\Core\Client\Client;
 use Solarium\QueryType\Update\Query\Document;
 
@@ -41,16 +41,16 @@ class DocumentFactoryTest extends SapphireTest
             'ObjectID'          => 1,
             'ClassName'         => 'Page',
             'ClassHierarchy'    =>
-                [
-                    'silverstripe\\view\\viewabledata'   => ViewableData::class,
-                    'silverstripe\\orm\\dataobject'      => DataObject::class,
-                    'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
-                    'page'                               => 'Page',
-                ],
+            [
+                'silverstripe\\view\\viewabledata'   => ViewableData::class,
+                'silverstripe\\orm\\dataobject'      => DataObject::class,
+                'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
+                'page'                               => 'Page',
+            ],
             'ViewStatus'        =>
-                [
-                    0 => '1-null',
-                ],
+            [
+                0 => '1-null',
+            ],
             'SiteTree_Title'    => 'Home',
             'SiteTree_Content'  => '<p>Welcome to SilverStripe! This is the default homepage. ' .
                 'You can edit this page by opening <a href="admin/">the CMS</a>.</p>' .
@@ -63,16 +63,16 @@ class DocumentFactoryTest extends SapphireTest
             'ObjectID'          => 6,
             'ClassName'         => 'Page',
             'ClassHierarchy'    =>
-                [
-                    'silverstripe\\view\\viewabledata'   => ViewableData::class,
-                    'silverstripe\\orm\\dataobject'      => DataObject::class,
-                    'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
-                    'page'                               => 'Page',
-                ],
+            [
+                'silverstripe\\view\\viewabledata'   => ViewableData::class,
+                'silverstripe\\orm\\dataobject'      => DataObject::class,
+                'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
+                'page'                               => 'Page',
+            ],
             'ViewStatus'        =>
-                [
-                    0 => '1-null',
-                ],
+            [
+                0 => '1-null',
+            ],
             'SiteTree_Title'    => 'Test 1',
             'SiteTree_ParentID' => 1,
         ],
@@ -81,16 +81,16 @@ class DocumentFactoryTest extends SapphireTest
             'ObjectID'            => 2,
             'ClassName'           => 'Page',
             'ClassHierarchy'      =>
-                [
-                    'silverstripe\\view\\viewabledata'   => ViewableData::class,
-                    'silverstripe\\orm\\dataobject'      => DataObject::class,
-                    'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
-                    'page'                               => 'Page',
-                ],
+            [
+                'silverstripe\\view\\viewabledata'   => ViewableData::class,
+                'silverstripe\\orm\\dataobject'      => DataObject::class,
+                'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
+                'page'                               => 'Page',
+            ],
             'ViewStatus'          =>
-                [
-                    0 => '1-null',
-                ],
+            [
+                0 => '1-null',
+            ],
             'SiteTree_Title'      => 'About Us',
             'SiteTree_Content'    => '<p>You can fill this page out with your own content, ' .
                 'or delete it and create your own pages.</p>',
@@ -102,16 +102,16 @@ class DocumentFactoryTest extends SapphireTest
             'ObjectID'          => 7,
             'ClassName'         => 'Page',
             'ClassHierarchy'    =>
-                [
-                    'silverstripe\\view\\viewabledata'   => ViewableData::class,
-                    'silverstripe\\orm\\dataobject'      => DataObject::class,
-                    'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
-                    'page'                               => 'Page',
-                ],
+            [
+                'silverstripe\\view\\viewabledata'   => ViewableData::class,
+                'silverstripe\\orm\\dataobject'      => DataObject::class,
+                'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
+                'page'                               => 'Page',
+            ],
             'ViewStatus'        =>
-                [
-                    0 => '1-null',
-                ],
+            [
+                0 => '1-null',
+            ],
             'SiteTree_Title'    => 'Test 2',
             'SiteTree_ParentID' => 1,
         ],
@@ -120,16 +120,16 @@ class DocumentFactoryTest extends SapphireTest
             'ObjectID'          => 3,
             'ClassName'         => 'Page',
             'ClassHierarchy'    =>
-                [
-                    'silverstripe\\view\\viewabledata'   => ViewableData::class,
-                    'silverstripe\\orm\\dataobject'      => DataObject::class,
-                    'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
-                    'page'                               => 'Page',
-                ],
+            [
+                'silverstripe\\view\\viewabledata'   => ViewableData::class,
+                'silverstripe\\orm\\dataobject'      => DataObject::class,
+                'silverstripe\\cms\\model\\sitetree' => SiteTree::class,
+                'page'                               => 'Page',
+            ],
             'ViewStatus'        =>
-                [
-                    0 => '1-null',
-                ],
+            [
+                0 => '1-null',
+            ],
             'SiteTree_Title'    => 'Contact Us',
             'SiteTree_Content'  => '<p>You can fill this page out with your own content, ' .
                 'or delete it and create your own pages.</p>',
