@@ -281,6 +281,8 @@ abstract class BaseIndex
             // We need to override the spellchecking with the previous spellcheck
             // @todo refactor this to a cleaner way
             $collation = $result->getSpellcheck();
+            // reset query array to prevent nested boosting
+            $this->queryFactory->setQueryArray([]);
             $retryResults = $this->spellcheckRetry($query, $searchResult);
             $this->retry = false;
             return $retryResults->setCollatedSpellcheck($collation);
